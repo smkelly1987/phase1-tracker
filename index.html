@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+<title>Training Sessions</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e0e0f;
+    --surface: #1a1a1c;
+    --surface2: #242426;
+    --border: #2e2e32;
+    --accent: #e8ff47;
+    --accent2: #47c3ff;
+    --accent3: #ff6b47;
+    --text: #f0f0f0;
+    --muted: #888;
+    --warm: #ffb347;
+    --ok: #4caf50;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+
+  .header {
+    padding: 20px 20px 0;
+    border-bottom: 1px solid var(--border);
+    position: sticky; top: 0;
+    background: var(--bg); z-index: 100;
+  }
+  .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+  .header-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; }
+  .header-sub { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+
+  .header-actions {
+    display: flex;
+    gap: 10px;
+    padding: 0 0 14px;
+    align-items: center;
+  }
+
+  .hdr-btn {
+    border: 1px solid var(--border);
+    background: none;
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    border-radius: 18px;
+    padding: 9px 14px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s, background 0.15s;
+    white-space: nowrap;
+  }
+  .hdr-btn:hover { border-color: var(--muted); color: var(--text); }
+  .hdr-btn.danger:hover { border-color: rgba(255,107,71,0.7); color: var(--accent3); }
+  .hdr-btn.ok:hover { border-color: rgba(76,175,80,0.7); color: var(--ok); }
+
+  .tabs { display: flex; overflow-x: auto; scrollbar-width: none; }
+  .tabs::-webkit-scrollbar { display: none; }
+  .tab {
+    flex: 1; padding: 12px 8px;
+    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
+    letter-spacing: 1px; text-transform: uppercase; color: var(--muted);
+    border: none; background: none; cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s; white-space: nowrap;
+  }
+  .tab[data-session="0"].active { border-color: var(--accent); color: var(--accent); }
+  .tab[data-session="1"].active { border-color: var(--accent2); color: var(--accent2); }
+  .tab[data-session="2"].active { border-color: var(--accent3); color: var(--accent3); }
+
+  .sessions { padding: 0 0 80px; }
+  .session { display: none; animation: fadeIn 0.2s ease; }
+  .session.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .session-banner {
+    padding: 20px 20px 16px;
+    display: flex; align-items: flex-end; justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+  }
+  .session-name { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; text-transform: uppercase; letter-spacing: -1px; line-height: 1; }
+  .session-0 .session-name { color: var(--accent); }
+  .session-1 .session-name { color: var(--accent2); }
+  .session-2 .session-name { color: var(--accent3); }
+  .session-meta { text-align: right; font-size: 11px; color: var(--muted); letter-spacing: 0.5px; line-height: 1.6; text-transform: uppercase; }
+
+  .phase { padding: 14px 20px 8px; }
+  .phase-label {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
+    letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
+    border-left: 2px solid var(--border); padding-left: 8px; margin-bottom: 10px;
+  }
+  .session-0 .phase-label.active-phase { border-color: var(--accent); color: var(--accent); }
+  .session-1 .phase-label.active-phase { border-color: var(--accent2); color: var(--accent2); }
+  .session-2 .phase-label.active-phase { border-color: var(--accent3); color: var(--accent3); }
+
+  .exercise-list { padding: 0 12px; display: flex; flex-direction: column; gap: 6px; }
+
+  .exercise-card {
+    background: var(--surface);
+    border-radius: 10px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    transition: opacity 0.2s;
+  }
+  .exercise-card.done { opacity: 0.4; }
+  .exercise-card.done .ex-name { text-decoration: line-through; }
+
+  .card-top {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-top:active { background: var(--surface2); }
+
+  .ex-left { display: flex; align-items: center; gap: 12px; }
+  .ex-num { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted); min-width: 18px; }
+  .ex-info { flex: 1; }
+  .ex-name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1.1; }
+  .ex-detail { font-size: 12px; color: var(--muted); margin-top: 2px; letter-spacing: 0.3px; }
+
+  .ex-badge {
+    font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700;
+    padding: 5px 10px; border-radius: 6px; white-space: nowrap;
+    background: var(--surface2); color: var(--text);
+    text-align: center; min-width: 64px; line-height: 1.2;
+  }
+  .ex-badge-sets { font-size: 11px; opacity: 0.7; font-weight: 600; display: block; }
+
+  .session-0 .exercise-card:not(.done) .ex-badge { background: rgba(232,255,71,0.12); color: var(--accent); }
+  .session-1 .exercise-card:not(.done) .ex-badge { background: rgba(71,195,255,0.12); color: var(--accent2); }
+  .session-2 .exercise-card:not(.done) .ex-badge { background: rgba(255,107,71,0.12); color: var(--accent3); }
+
+  /* WEIGHT ROW */
+  .weight-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px 14px;
+    border-top: 1px solid var(--border);
+  }
+
+  .weight-label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .weight-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+  }
+
+  .wt-btn {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text);
+    font-size: 20px;
+    font-weight: 300;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: background 0.1s;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+  .wt-btn:active { background: var(--border); }
+
+  .wt-display {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    min-width: 56px;
+    text-align: center;
+    line-height: 1;
+  }
+
+  .wt-unit {
+    font-size: 11px;
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    min-width: 14px;
+  }
+
+  .wt-step-toggle {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    background: none;
+    border-radius: 4px;
+    padding: 4px 7px;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+    transition: color 0.1s, border-color 0.1s;
+  }
+
+  .saved-flash {
+    font-size: 10px;
+    color: var(--ok);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .saved-flash.show { opacity: 1; }
+
+  .note-card {
+    margin: 10px 12px 0;
+    background: rgba(255,179,71,0.07);
+    border: 1px solid rgba(255,179,71,0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: var(--warm);
+    letter-spacing: 0.2px;
+    line-height: 1.5;
+  }
+  .note-card strong {
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 1px; font-size: 11px;
+    display: block; margin-bottom: 3px;
+  }
+
+  .reset-btn {
+    display: block; margin: 12px auto 0;
+    padding: 10px 24px;
+    background: none; border: 1px solid var(--border); border-radius: 20px;
+    color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
+    cursor: pointer; transition: border-color 0.15s, color 0.15s;
+  }
+  .reset-btn:hover { border-color: var(--muted); color: var(--text); }
+
+  .pain-rule {
+    margin: 24px 12px 0;
+    background: var(--surface); border-radius: 10px; border: 1px solid var(--border);
+    padding: 14px 16px;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;
+  }
+  .pain-item { display: flex; flex-direction: column; gap: 4px; }
+  .pain-dot { width: 8px; height: 8px; border-radius: 50%; margin: 0 auto; }
+  .pain-label { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
+  .pain-action { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 18px;
+    transform: translateX(-50%);
+    background: rgba(26,26,28,0.98);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 10px 14px;
+    font-size: 11px;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+    color: var(--text);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s, transform 0.22s;
+    z-index: 999;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    max-width: calc(100vw - 24px);
+    text-align: center;
+    white-space: nowrap;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  .toast .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--ok);
+    flex-shrink: 0;
+  }
+</style>
+</head>
+
+<body>
+<div class="header">
+  <div class="header-top">
+    <span class="header-title">Phase 1</span>
+    <span class="header-sub">Weeks 1–4 · RPE 6–8</span>
+  </div>
+
+  <div class="header-actions">
+    <button class="hdr-btn ok" onclick="exportCSV()">Export CSV</button>
+    <button class="hdr-btn danger" onclick="clearHistory()">Clear History</button>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-session="0">Day 1 · Lower</button>
+    <button class="tab" data-session="1">Day 2 · Upper</button>
+    <button class="tab" data-session="2">Day 3 · Full Body</button>
+  </div>
+</div>
+
+<div class="sessions">
+
+  <!-- SESSION 1: LOWER -->
+  <div class="session session-0 active">
+    <div class="session-banner">
+      <div>
+        <div class="session-name">Lower Body</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">+ Core</div>
+      </div>
+      <div class="session-meta">4 exercises<br>2 core finishers<br>~55 min</div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Warm-Up · 10 min</div>
+      <div class="exercise-list">
+        <div class="exercise-card" id="ex-deadbug">
+          <div class="card-top" onclick="toggleDone('ex-deadbug')">
+            <div class="ex-left"><div class="ex-num">W1</div><div class="ex-info"><div class="ex-name">Dead Bug</div><div class="ex-detail">Slow + controlled · exhale on extend</div></div></div>
+            <div class="ex-badge">3×8<span class="ex-badge-sets">each</span></div>
+          </div>
+        </div>
+        <div class="exercise-card" id="ex-glutebridge">
+          <div class="card-top" onclick="toggleDone('ex-glutebridge')">
+            <div class="ex-left"><div class="ex-num">W2</div><div class="ex-info"><div class="ex-name">Glute Bridge</div><div class="ex-detail">Pause 2s at top · drive hips fully</div></div></div>
+            <div class="ex-badge">3×10<span class="ex-badge-sets">reps</span></div>
+          </div>
+        </div>
+        <div class="exercise-card" id="ex-bandedwalk">
+          <div class="card-top" onclick="toggleDone('ex-bandedwalk')">
+            <div class="ex-left"><div class="ex-num">W3</div><div class="ex-info"><div class="ex-name">Banded Lateral Walk</div><div class="ex-detail">Glute med focus · keep hips level</div></div></div>
+            <div class="ex-badge">2×15<span class="ex-badge-sets">each</span></div>
+          </div>
+        </div>
+        <div class="exercise-card" id="ex-hipcars">
+          <div class="card-top" onclick="toggleDone('ex-hipcars')">
+            <div class="ex-left"><div class="ex-num">W4</div><div class="ex-info"><div class="ex-name">Hip CARs</div><div class="ex-detail">Controlled articular rotations · slow</div></div></div>
+            <div class="ex-badge">5<span class="ex-badge-sets">each way</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label active-phase">Main Work</div>
+      <div class="exercise-list">
+
+        <div class="exercise-card" id="ex-trapbar">
+          <div class="card-top" onclick="toggleDone('ex-trapbar')">
+            <div class="ex-left"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Trap Bar Deadlift</div><div class="ex-detail">2 min rest · neutral spine throughout</div></div></div>
+            <div class="ex-badge">4×5<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">Total weight</span>
+            <span class="saved-flash" id="saved-ex-trapbar">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-trapbar')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-trapbar',-1)">−</button>
+              <span class="wt-display" id="wt-ex-trapbar">60</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-trapbar',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-splitsquat">
+          <div class="card-top" onclick="toggleDone('ex-splitsquat')">
+            <div class="ex-left"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Split Squat</div><div class="ex-detail">RFESS optional · 90 sec rest · L then R</div></div></div>
+            <div class="ex-badge">3×8<span class="ex-badge-sets">each</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB each hand</span>
+            <span class="saved-flash" id="saved-ex-splitsquat">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-splitsquat')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-splitsquat',-1)">−</button>
+              <span class="wt-display" id="wt-ex-splitsquat">10</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-splitsquat',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-stepups">
+          <div class="card-top" onclick="toggleDone('ex-stepups')">
+            <div class="ex-left"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Step-Ups</div><div class="ex-detail">Controlled · don't push off back foot</div></div></div>
+            <div class="ex-badge">3×10<span class="ex-badge-sets">each</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB each hand</span>
+            <span class="saved-flash" id="saved-ex-stepups">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-stepups')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-stepups',-1)">−</button>
+              <span class="wt-display" id="wt-ex-stepups">10</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-stepups',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-hipthrust">
+          <div class="card-top" onclick="toggleDone('ex-hipthrust')">
+            <div class="ex-left"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Thrust</div><div class="ex-detail">Pause 1s top · chin tucked · full drive</div></div></div>
+            <div class="ex-badge">3×10<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">Barbell load</span>
+            <span class="saved-flash" id="saved-ex-hipthrust">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-hipthrust')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-hipthrust',-1)">−</button>
+              <span class="wt-display" id="wt-ex-hipthrust">40</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-hipthrust',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Core Finisher</div>
+      <div class="exercise-list">
+        <div class="exercise-card" id="ex-sideplank1">
+          <div class="card-top" onclick="toggleDone('ex-sideplank1')">
+            <div class="ex-left"><div class="ex-num">C1</div><div class="ex-info"><div class="ex-name">Side Plank</div><div class="ex-detail">Hips stacked · don't sag</div></div></div>
+            <div class="ex-badge">3×45s<span class="ex-badge-sets">each</span></div>
+          </div>
+        </div>
+        <div class="exercise-card" id="ex-pallof1">
+          <div class="card-top" onclick="toggleDone('ex-pallof1')">
+            <div class="ex-left"><div class="ex-num">C2</div><div class="ex-info"><div class="ex-name">Pallof Press</div><div class="ex-detail">Anti-rotation · don't rotate torso</div></div></div>
+            <div class="ex-badge">3×10<span class="ex-badge-sets">each</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="logSession(0)">Log Workout</button>
+    <button class="reset-btn" onclick="resetSession(0)">Reset Checkmarks</button>
+
+    <div class="pain-rule">
+      <div class="pain-item"><div class="pain-dot" style="background:#4caf50"></div><div class="pain-label">Pain ≤4</div><div class="pain-action">Train as written</div></div>
+      <div class="pain-item"><div class="pain-dot" style="background:#ff9800"></div><div class="pain-label">Pain 5</div><div class="pain-action">Drop axial load</div></div>
+      <div class="pain-item"><div class="pain-dot" style="background:#f44336"></div><div class="pain-label">Pain >5</div><div class="pain-action">Deload week</div></div>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+
+  <!-- SESSION 2: UPPER -->
+  <div class="session session-1">
+    <div class="session-banner">
+      <div>
+        <div class="session-name">Upper Body</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Push · Pull · Carry</div>
+      </div>
+      <div class="session-meta">5 exercises<br>~45 min</div>
+    </div>
+
+    <div class="note-card" style="margin:12px 12px 0">
+      <strong>Note on Pull-Ups</strong>
+      If strength isn't there yet, sub in Lat Pulldown. No ego. Build to it.
+    </div>
+
+    <div class="phase">
+      <div class="phase-label active-phase">Main Work</div>
+      <div class="exercise-list">
+
+        <div class="exercise-card" id="ex-dbbench">
+          <div class="card-top" onclick="toggleDone('ex-dbbench')">
+            <div class="ex-left"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">DB Bench Press</div><div class="ex-detail">Control the descent · full range</div></div></div>
+            <div class="ex-badge">4×6–8<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB each hand</span>
+            <span class="saved-flash" id="saved-ex-dbbench">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-dbbench')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-dbbench',-1)">−</button>
+              <span class="wt-display" id="wt-ex-dbbench">20</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-dbbench',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-pullups">
+          <div class="card-top" onclick="toggleDone('ex-pullups')">
+            <div class="ex-left"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Pull-Ups / Assisted</div><div class="ex-detail">Full hang to chin · no kipping</div></div></div>
+            <div class="ex-badge">4×6<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">Assist(−) / Added(+)</span>
+            <span class="saved-flash" id="saved-ex-pullups">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-pullups')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-pullups',-1)">−</button>
+              <span class="wt-display" id="wt-ex-pullups">BW</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-pullups',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-cablerow">
+          <div class="card-top" onclick="toggleDone('ex-cablerow')">
+            <div class="ex-left"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Cable Row</div><div class="ex-detail">Chest up · squeeze at end range</div></div></div>
+            <div class="ex-badge">3×10<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">Stack weight</span>
+            <span class="saved-flash" id="saved-ex-cablerow">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-cablerow')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-cablerow',-1)">−</button>
+              <span class="wt-display" id="wt-ex-cablerow">40</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-cablerow',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-ohpress">
+          <div class="card-top" onclick="toggleDone('ex-ohpress')">
+            <div class="ex-left"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Overhead DB Press</div><div class="ex-detail">Neutral grip · brace core · no arch</div></div></div>
+            <div class="ex-badge">3×8<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB each hand</span>
+            <span class="saved-flash" id="saved-ex-ohpress">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-ohpress')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-ohpress',-1)">−</button>
+              <span class="wt-display" id="wt-ex-ohpress">14</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-ohpress',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-farmercarry">
+          <div class="card-top" onclick="toggleDone('ex-farmercarry')">
+            <div class="ex-left"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Farmer Carry</div><div class="ex-detail">Tall posture · shoulders packed</div></div></div>
+            <div class="ex-badge">4×30m<span class="ex-badge-sets">carry</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB each hand</span>
+            <span class="saved-flash" id="saved-ex-farmercarry">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-farmercarry')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-farmercarry',-1)">−</button>
+              <span class="wt-display" id="wt-ex-farmercarry">20</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-farmercarry',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="logSession(1)">Log Workout</button>
+    <button class="reset-btn" onclick="resetSession(1)">Reset Checkmarks</button>
+
+    <div class="pain-rule">
+      <div class="pain-item"><div class="pain-dot" style="background:#4caf50"></div><div class="pain-label">Pain ≤4</div><div class="pain-action">Train as written</div></div>
+      <div class="pain-item"><div class="pain-dot" style="background:#ff9800"></div><div class="pain-label">Pain 5</div><div class="pain-action">Drop axial load</div></div>
+      <div class="pain-item"><div class="pain-dot" style="background:#f44336"></div><div class="pain-label">Pain >5</div><div class="pain-action">Deload week</div></div>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+
+  <!-- SESSION 3: FULL BODY -->
+  <div class="session session-2">
+    <div class="session-banner">
+      <div>
+        <div class="session-name">Full Body</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Stability Focus · Lighter</div>
+      </div>
+      <div class="session-meta">6 exercises<br>core circuit<br>~50 min</div>
+    </div>
+
+    <div class="note-card" style="margin:12px 12px 0">
+      <strong>Intention for this session</strong>
+      Precision day. Control over load. Perfect reps only.
+    </div>
+
+    <div class="phase">
+      <div class="phase-label active-phase">Main Work</div>
+      <div class="exercise-list">
+
+        <div class="exercise-card" id="ex-gobletsquat">
+          <div class="card-top" onclick="toggleDone('ex-gobletsquat')">
+            <div class="ex-left"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Goblet Squat</div><div class="ex-detail">Elbows inside knees · tall chest</div></div></div>
+            <div class="ex-badge">3×8<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB / KB weight</span>
+            <span class="saved-flash" id="saved-ex-gobletsquat">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-gobletsquat')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-gobletsquat',-1)">−</button>
+              <span class="wt-display" id="wt-ex-gobletsquat">16</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-gobletsquat',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-rdl">
+          <div class="card-top" onclick="toggleDone('ex-rdl')">
+            <div class="ex-left"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Romanian Deadlift</div><div class="ex-detail">Hip hinge · soft knee · feel the stretch</div></div></div>
+            <div class="ex-badge">3×8<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB each hand</span>
+            <span class="saved-flash" id="saved-ex-rdl">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-rdl')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-rdl',-1)">−</button>
+              <span class="wt-display" id="wt-ex-rdl">20</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-rdl',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-slrdl">
+          <div class="card-top" onclick="toggleDone('ex-slrdl')">
+            <div class="ex-left"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Single-Leg RDL</div><div class="ex-detail">Slow · balance focus · hips square</div></div></div>
+            <div class="ex-badge">3×8<span class="ex-badge-sets">each</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB each hand</span>
+            <span class="saved-flash" id="saved-ex-slrdl">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-slrdl')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-slrdl',-1)">−</button>
+              <span class="wt-display" id="wt-ex-slrdl">12</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-slrdl',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-inclinepress">
+          <div class="card-top" onclick="toggleDone('ex-inclinepress')">
+            <div class="ex-left"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Incline DB Press</div><div class="ex-detail">30–45° incline · controlled tempo</div></div></div>
+            <div class="ex-badge">3×10<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">DB each hand</span>
+            <span class="saved-flash" id="saved-ex-inclinepress">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-inclinepress')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-inclinepress',-1)">−</button>
+              <span class="wt-display" id="wt-ex-inclinepress">18</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-inclinepress',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="exercise-card" id="ex-latpulldown">
+          <div class="card-top" onclick="toggleDone('ex-latpulldown')">
+            <div class="ex-left"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Lat Pulldown</div><div class="ex-detail">Pull to upper chest · don't lean back</div></div></div>
+            <div class="ex-badge">3×10<span class="ex-badge-sets">reps</span></div>
+          </div>
+          <div class="weight-row">
+            <span class="weight-label">Stack weight</span>
+            <span class="saved-flash" id="saved-ex-latpulldown">✓ Saved</span>
+            <div class="weight-controls">
+              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-latpulldown')">±5</button>
+              <button class="wt-btn" onclick="adjustWeight('ex-latpulldown',-1)">−</button>
+              <span class="wt-display" id="wt-ex-latpulldown">40</span>
+              <span class="wt-unit">kg</span>
+              <button class="wt-btn" onclick="adjustWeight('ex-latpulldown',1)">+</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="phase">
+      <div class="phase-label">Core Circuit</div>
+      <div class="exercise-list">
+        <div class="exercise-card" id="ex-birddog">
+          <div class="card-top" onclick="toggleDone('ex-birddog')">
+            <div class="ex-left"><div class="ex-num">C1</div><div class="ex-info"><div class="ex-name">Bird Dog</div><div class="ex-detail">Opposite arm & leg · don't rotate</div></div></div>
+            <div class="ex-badge">3×8<span class="ex-badge-sets">each</span></div>
+          </div>
+        </div>
+        <div class="exercise-card" id="ex-sideplank2">
+          <div class="card-top" onclick="toggleDone('ex-sideplank2')">
+            <div class="ex-left"><div class="ex-num">C2</div><div class="ex-info"><div class="ex-name">Side Plank</div><div class="ex-detail">Hips in line · full breath</div></div></div>
+            <div class="ex-badge">3×45s<span class="ex-badge-sets">each</span></div>
+          </div>
+        </div>
+        <div class="exercise-card" id="ex-antirot">
+          <div class="card-top" onclick="toggleDone('ex-antirot')">
+            <div class="ex-left"><div class="ex-num">C3</div><div class="ex-info"><div class="ex-name">Anti-Rotation Hold</div><div class="ex-detail">Pallof-style · resist rotation</div></div></div>
+            <div class="ex-badge">3×30s<span class="ex-badge-sets">each</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="logSession(2)">Log Workout</button>
+    <button class="reset-btn" onclick="resetSession(2)">Reset Checkmarks</button>
+
+    <div class="pain-rule">
+      <div class="pain-item"><div class="pain-dot" style="background:#4caf50"></div><div class="pain-label">Pain ≤4</div><div class="pain-action">Train as written</div></div>
+      <div class="pain-item"><div class="pain-dot" style="background:#ff9800"></div><div class="pain-label">Pain 5</div><div class="pain-action">Drop axial load</div></div>
+      <div class="pain-item"><div class="pain-dot" style="background:#f44336"></div><div class="pain-label">Pain >5</div><div class="pain-action">Deload week</div></div>
+    </div>
+    <div style="height:24px"></div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"><span class="dot"></span><span id="toastText">Saved</span></div>
+
+<script>
+  // ---------------------------
+  // Configuration
+  // ---------------------------
+  const WEIGHTED = [
+    'ex-trapbar','ex-splitsquat','ex-stepups','ex-hipthrust',
+    'ex-dbbench','ex-pullups','ex-cablerow','ex-ohpress','ex-farmercarry',
+    'ex-gobletsquat','ex-rdl','ex-slrdl','ex-inclinepress','ex-latpulldown'
+  ];
+
+  const DEFAULTS = {
+    'ex-trapbar':60,'ex-splitsquat':10,'ex-stepups':10,'ex-hipthrust':40,
+    'ex-dbbench':20,'ex-pullups':null,'ex-cablerow':40,'ex-ohpress':14,'ex-farmercarry':20,
+    'ex-gobletsquat':16,'ex-rdl':20,'ex-slrdl':12,'ex-inclinepress':18,'ex-latpulldown':40
+  };
+
+  // If you want smaller default jumps, change this to 2.5
+  const DEFAULT_STEP = 5;
+
+  // Workout history storage key
+  const HISTORY_KEY = 'workout-history-v1';
+
+  // Per-session exercise groups for logging
+  const weightedBySession = [
+    ['ex-trapbar','ex-splitsquat','ex-stepups','ex-hipthrust'],
+    ['ex-dbbench','ex-pullups','ex-cablerow','ex-ohpress','ex-farmercarry'],
+    ['ex-gobletsquat','ex-rdl','ex-slrdl','ex-inclinepress','ex-latpulldown']
+  ];
+  const sessionNames = ['Lower Body', 'Upper Body', 'Full Body'];
+
+  // ---------------------------
+  // State
+  // ---------------------------
+  const stepSizes = {};
+  WEIGHTED.forEach(id => stepSizes[id] = DEFAULT_STEP);
+
+  const weights = {}; // number or null (null for BW on pullups)
+
+  // ---------------------------
+  // Toast
+  // ---------------------------
+  function toast(msg) {
+    const el = document.getElementById('toast');
+    const txt = document.getElementById('toastText');
+    if (!el || !txt) return;
+    txt.textContent = msg;
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 1600);
+  }
+
+  // ---------------------------
+  // LocalStorage persistence
+  // ---------------------------
+  function loadWeights() {
+    for (const id of WEIGHTED) {
+      const raw = localStorage.getItem('wt-' + id);
+      if (raw !== null) {
+        weights[id] = (raw === 'BW') ? null : parseFloat(raw);
+      } else {
+        weights[id] = DEFAULTS[id];
+      }
+      renderWeight(id);
+    }
+  }
+
+  function saveWeight(id) {
+    const val = (weights[id] === null) ? 'BW' : String(weights[id]);
+    localStorage.setItem('wt-' + id, val);
+    flashSaved(id);
+  }
+
+  function flashSaved(id) {
+    const el = document.getElementById('saved-' + id);
+    if (!el) return;
+    el.classList.add('show');
+    clearTimeout(el._t);
+    el._t = setTimeout(() => el.classList.remove('show'), 1400);
+  }
+
+  // ---------------------------
+  // Weight UI
+  // ---------------------------
+  function renderWeight(id) {
+    const el = document.getElementById('wt-' + id);
+    if (!el) return;
+    const v = weights[id];
+    if (v === null) {
+      el.textContent = 'BW';
+    } else {
+      el.textContent = (v % 1 === 0) ? v : v.toFixed(1);
+    }
+  }
+
+  function adjustWeight(id, dir) {
+    const step = stepSizes[id] ?? DEFAULT_STEP;
+    let current = weights[id];
+
+    // Pull-ups: null means BW. Treat BW as 0 for stepping.
+    if (current === null) current = 0;
+
+    let next = Math.round((current + dir * step) * 10) / 10;
+    if (next < 0) next = 0;
+
+    // For pull-ups only: 0 = BW (null)
+    if (id === 'ex-pullups' && next === 0) {
+      weights[id] = null;
+    } else {
+      weights[id] = next;
+    }
+
+    renderWeight(id);
+    saveWeight(id);
+  }
+
+  function toggleStep(e, id) {
+    // Stop the click from also triggering card toggle (safe)
+    e.preventDefault();
+    e.stopPropagation();
+
+    stepSizes[id] = (stepSizes[id] === 5 ? 2.5 : 5);
+    e.target.textContent = '±' + stepSizes[id];
+    toast('Step ' + stepSizes[id] + 'kg');
+  }
+
+  // ---------------------------
+  // Tabs
+  // ---------------------------
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      const idx = tab.dataset.session;
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.session').forEach(s => s.classList.remove('active'));
+      tab.classList.add('active');
+      document.querySelectorAll('.session')[idx].classList.add('active');
+      window.scrollTo(0, 0);
+    });
+  });
+
+  // ---------------------------
+  // Done toggle (visual only)
+  // ---------------------------
+  function toggleDone(id) {
+    document.getElementById(id)?.classList.toggle('done');
+  }
+
+  // ---------------------------
+  // Reset checkmarks
+  // ---------------------------
+  const sessionExercises = [
+    ['ex-deadbug','ex-glutebridge','ex-bandedwalk','ex-hipcars',
+     'ex-trapbar','ex-splitsquat','ex-stepups','ex-hipthrust','ex-sideplank1','ex-pallof1'],
+    ['ex-dbbench','ex-pullups','ex-cablerow','ex-ohpress','ex-farmercarry'],
+    ['ex-gobletsquat','ex-rdl','ex-slrdl','ex-inclinepress','ex-latpulldown',
+     'ex-birddog','ex-sideplank2','ex-antirot']
+  ];
+
+  function resetSession(idx) {
+    sessionExercises[idx].forEach(id => {
+      document.getElementById(id)?.classList.remove('done');
+    });
+    toast('Checkmarks reset');
+  }
+
+  // ---------------------------
+  // Workout history (log + export)
+  // ---------------------------
+  function getHistory() {
+    try {
+      return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    } catch {
+      return [];
+    }
+  }
+
+  function saveHistory(entries) {
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+  }
+
+  function todayISO() {
+    const d = new Date();
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Log one row per weighted exercise
+  function logSession(sessionIdx) {
+    const date = todayISO();
+    const rows = weightedBySession[sessionIdx].map(id => ({
+      date,
+      session: sessionNames[sessionIdx],
+      exerciseId: id,
+      weight: (weights[id] === null ? 'BW' : weights[id]),
+      step: stepSizes[id] ?? DEFAULT_STEP
+    }));
+
+    const history = getHistory();
+    history.push(...rows);
+    saveHistory(history);
+
+    toast(`Logged ${sessionNames[sessionIdx]} · ${date}`);
+  }
+
+  function exportCSV() {
+    const history = getHistory();
+    if (!history.length) {
+      toast('No history to export');
+      return;
+    }
+
+    const header = ['date','session','exerciseId','weight','step'];
+    const lines = [header.join(',')];
+
+    for (const r of history) {
+      const row = [
+        r.date,
+        escapeCSV(r.session),
+        r.exerciseId,
+        r.weight,
+        r.step
+      ];
+      lines.push(row.join(','));
+    }
+
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `workout-history-${todayISO()}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    URL.revokeObjectURL(url);
+    toast('CSV exported');
+  }
+
+  function escapeCSV(value) {
+    // Only needed for fields that might contain commas/quotes/newlines
+    const s = String(value);
+    if (/[,"\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
+    return s;
+  }
+
+  function clearHistory() {
+    const ok = confirm('Clear ALL logged workout history? This cannot be undone.');
+    if (!ok) return;
+    localStorage.removeItem(HISTORY_KEY);
+    toast('History cleared');
+  }
+
+  // ---------------------------
+  // Boot
+  // ---------------------------
+  loadWeights();
+</script>
+</body>
+</html>
