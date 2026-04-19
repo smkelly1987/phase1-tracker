@@ -1,1279 +1,637 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
-<title>Training Sessions</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no"/>
+<title>Training · Phase 2</title>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #0e0e0f;
-    --surface: #1a1a1c;
-    --surface2: #242426;
-    --border: #2e2e32;
-    --accent: #e8ff47;
-    --accent2: #47c3ff;
-    --accent3: #ff6b47;
-    --text: #f0f0f0;
-    --muted: #888;
-    --warm: #ffb347;
-    --ok: #4caf50;
-    --heavy: #ff47a3;
-  }
+:root{--bg:#0e0e0f;--surface:#1a1a1c;--surface2:#242426;--border:#2e2e32;--accent:#e8ff47;--accent2:#47c3ff;--accent3:#ff6b47;--text:#f0f0f0;--muted:#888;--warm:#ffb347;--ok:#4caf50;--heavy:#ff47a3}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:'Barlow',sans-serif;min-height:100vh}
 
-  * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-  html, body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; }
+.header{padding:20px 20px 0;border-bottom:1px solid var(--border);position:sticky;top:0;background:var(--bg);z-index:100}
+.header-top{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.header-title{font-family:'Barlow Condensed',sans-serif;font-size:28px;font-weight:800;letter-spacing:-0.5px;text-transform:uppercase}
+.header-sub{font-size:12px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+.header-actions{display:flex;gap:8px;padding:0 0 14px;flex-wrap:wrap}
+.hdr-btn{border:1px solid var(--border);background:none;color:var(--muted);font-size:11px;letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;font-weight:700;border-radius:18px;padding:8px 13px;cursor:pointer;transition:all 0.15s;white-space:nowrap}
+.hdr-btn:hover{border-color:var(--muted);color:var(--text)}
+.hdr-btn.danger:hover{border-color:rgba(255,107,71,0.7);color:var(--accent3)}
+.hdr-btn.ok:hover{border-color:rgba(76,175,80,0.7);color:var(--ok)}
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;padding:12px 8px;font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap}
+.tab[data-s="0"].active{border-color:var(--accent);color:var(--accent)}
+.tab[data-s="1"].active{border-color:var(--accent2);color:var(--accent2)}
+.tab[data-s="2"].active{border-color:var(--accent3);color:var(--accent3)}
 
-  .header {
-    padding: 20px 20px 0;
-    border-bottom: 1px solid var(--border);
-    position: sticky; top: 0;
-    background: var(--bg); z-index: 100;
-  }
-  .header-top { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
-  .header-title { font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; text-transform: uppercase; }
-  .header-sub { font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; }
+.sessions{padding:0 0 100px}
+.session{display:none;animation:fadeIn 0.2s ease}
+.session.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
 
-  .header-actions {
-    display: flex;
-    gap: 10px;
-    padding: 0 0 14px;
-    align-items: center;
-  }
+.session-banner{padding:20px 20px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);gap:12px}
+.session-name-block{flex:1}
+.session-name{font-family:'Barlow Condensed',sans-serif;font-size:36px;font-weight:800;text-transform:uppercase;letter-spacing:-1px;line-height:1}
+.session-subtitle{font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px}
+.session-meta{text-align:right;font-size:11px;color:var(--muted);letter-spacing:0.5px;line-height:1.6;text-transform:uppercase}
+.s0 .session-name{color:var(--accent)}.s1 .session-name{color:var(--accent2)}.s2 .session-name{color:var(--accent3)}
 
-  .hdr-btn {
-    border: 1px solid var(--border);
-    background: none;
-    color: var(--muted);
-    font-size: 11px;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    font-family: 'Barlow Condensed', sans-serif;
-    font-weight: 700;
-    border-radius: 18px;
-    padding: 9px 14px;
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s, background 0.15s;
-    white-space: nowrap;
-  }
-  .hdr-btn:hover { border-color: var(--muted); color: var(--text); }
-  .hdr-btn.danger:hover { border-color: rgba(255,107,71,0.7); color: var(--accent3); }
-  .hdr-btn.ok:hover { border-color: rgba(76,175,80,0.7); color: var(--ok); }
+.edit-btn{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);background:none;border-radius:14px;padding:6px 14px;cursor:pointer;transition:all 0.15s;flex-shrink:0}
+.edit-btn.on{color:var(--accent2);border-color:rgba(71,195,255,0.5)}
 
-  .tabs { display: flex; overflow-x: auto; scrollbar-width: none; }
-  .tabs::-webkit-scrollbar { display: none; }
-  .tab {
-    flex: 1; padding: 12px 8px;
-    font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700;
-    letter-spacing: 1px; text-transform: uppercase; color: var(--muted);
-    border: none; background: none; cursor: pointer;
-    border-bottom: 2px solid transparent;
-    transition: color 0.15s, border-color 0.15s; white-space: nowrap;
-  }
-  .tab[data-session="0"].active { border-color: var(--accent); color: var(--accent); }
-  .tab[data-session="1"].active { border-color: var(--accent2); color: var(--accent2); }
-  .tab[data-session="2"].active { border-color: var(--accent3); color: var(--accent3); }
+.edit-bar{display:none;align-items:center;justify-content:center;padding:8px 20px;background:rgba(71,195,255,0.06);border-bottom:1px solid rgba(71,195,255,0.12);font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--accent2)}
+.session.em .edit-bar{display:flex}
 
-  .sessions { padding: 0 0 80px; }
-  .session { display: none; animation: fadeIn 0.2s ease; }
-  .session.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+.heavy-row{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;background:var(--surface);border-bottom:1px solid var(--border);transition:background 0.2s}
+.heavy-row.on{background:rgba(255,71,163,0.08);border-bottom-color:rgba(255,71,163,0.3)}
+.heavy-lbl{display:flex;flex-direction:column;gap:2px}
+.heavy-title{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);transition:color 0.2s}
+.heavy-row.on .heavy-title{color:var(--heavy)}
+.heavy-sub{font-size:11px;color:var(--muted)}
+.heavy-row.on .heavy-sub{color:rgba(255,71,163,0.7)}
+.tog{position:relative;width:48px;height:26px;flex-shrink:0}
+.tog input{opacity:0;width:0;height:0}
+.tog-slider{position:absolute;inset:0;background:var(--surface2);border:1px solid var(--border);border-radius:13px;cursor:pointer;transition:all 0.2s}
+.tog-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:var(--muted);border-radius:50%;transition:all 0.2s}
+.tog input:checked+.tog-slider{background:rgba(255,71,163,0.2);border-color:rgba(255,71,163,0.5)}
+.tog input:checked+.tog-slider::before{transform:translateX(22px);background:var(--heavy)}
 
-  /* HEAVY TOGGLE BANNER */
-  .heavy-toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 12px 20px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    transition: background 0.2s;
-  }
-  .heavy-toggle-row.is-heavy {
-    background: rgba(255,71,163,0.08);
-    border-bottom-color: rgba(255,71,163,0.3);
-  }
-  .heavy-toggle-label {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-  }
-  .heavy-toggle-title {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 15px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    color: var(--muted);
-    transition: color 0.2s;
-  }
-  .heavy-toggle-row.is-heavy .heavy-toggle-title { color: var(--heavy); }
-  .heavy-toggle-sub {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.3px;
-  }
-  .heavy-toggle-row.is-heavy .heavy-toggle-sub { color: rgba(255,71,163,0.7); }
+.phase{padding:14px 20px 8px}
+.phase-lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--muted);border-left:2px solid var(--border);padding-left:8px;margin-bottom:10px}
+.s0 .phase-lbl.ap{border-color:var(--accent);color:var(--accent)}
+.s1 .phase-lbl.ap{border-color:var(--accent2);color:var(--accent2)}
+.s2 .phase-lbl.ap{border-color:var(--accent3);color:var(--accent3)}
+.ex-list{padding:0 12px;display:flex;flex-direction:column;gap:6px}
 
-  /* Toggle switch */
-  .toggle-switch {
-    position: relative;
-    width: 48px;
-    height: 26px;
-    flex-shrink: 0;
-  }
-  .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute;
-    inset: 0;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 13px;
-    cursor: pointer;
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .toggle-slider::before {
-    content: '';
-    position: absolute;
-    width: 18px; height: 18px;
-    left: 3px; top: 3px;
-    background: var(--muted);
-    border-radius: 50%;
-    transition: transform 0.2s, background 0.2s;
-  }
-  .toggle-switch input:checked + .toggle-slider {
-    background: rgba(255,71,163,0.2);
-    border-color: rgba(255,71,163,0.5);
-  }
-  .toggle-switch input:checked + .toggle-slider::before {
-    transform: translateX(22px);
-    background: var(--heavy);
-  }
+.ex-card{background:var(--surface);border-radius:10px;border:1px solid var(--border);overflow:hidden;transition:opacity 0.2s,border-color 0.15s}
+.ex-card.done{opacity:0.4}
+.ex-card.done .ex-name{text-decoration:line-through}
+.session.em .ex-card{border-color:rgba(71,195,255,0.18)}
 
-  .session-banner {
-    padding: 20px 20px 16px;
-    display: flex; align-items: flex-end; justify-content: space-between;
-    border-bottom: 1px solid var(--border);
-  }
-  .session-name { font-family: 'Barlow Condensed', sans-serif; font-size: 36px; font-weight: 800; text-transform: uppercase; letter-spacing: -1px; line-height: 1; }
-  .session-0 .session-name { color: var(--accent); }
-  .session-1 .session-name { color: var(--accent2); }
-  .session-2 .session-name { color: var(--accent3); }
-  .session-meta { text-align: right; font-size: 11px; color: var(--muted); letter-spacing: 0.5px; line-height: 1.6; text-transform: uppercase; }
+.card-top{display:grid;grid-template-columns:1fr auto;align-items:center;gap:10px;padding:14px 16px;cursor:pointer;user-select:none;transition:background 0.1s}
+.card-top:active,.session.em .card-top{background:rgba(71,195,255,0.04)}
 
-  .phase { padding: 14px 20px 8px; }
-  .phase-label {
-    font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700;
-    letter-spacing: 2px; text-transform: uppercase; color: var(--muted);
-    border-left: 2px solid var(--border); padding-left: 8px; margin-bottom: 10px;
-  }
-  .session-0 .phase-label.active-phase { border-color: var(--accent); color: var(--accent); }
-  .session-1 .phase-label.active-phase { border-color: var(--accent2); color: var(--accent2); }
-  .session-2 .phase-label.active-phase { border-color: var(--accent3); color: var(--accent3); }
+.ex-left{display:flex;align-items:center;gap:12px}
+.ex-num{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--muted);min-width:18px}
+.ex-name{font-family:'Barlow Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:0.3px;line-height:1.1}
+.ex-detail{font-size:12px;color:var(--muted);margin-top:2px;letter-spacing:0.3px}
+.ex-badge{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;padding:5px 10px;border-radius:6px;white-space:nowrap;background:var(--surface2);color:var(--text);text-align:center;min-width:64px;line-height:1.2;transition:all 0.2s}
+.ex-bsub{font-size:11px;opacity:0.7;font-weight:600;display:block}
 
-  .exercise-list { padding: 0 12px; display: flex; flex-direction: column; gap: 6px; }
+.s0 .ex-card:not(.done) .ex-badge{background:rgba(232,255,71,0.12);color:var(--accent)}
+.s1 .ex-card:not(.done) .ex-badge{background:rgba(71,195,255,0.12);color:var(--accent2)}
+.s2 .ex-card:not(.done) .ex-badge{background:rgba(255,107,71,0.12);color:var(--accent3)}
+.heavy-session .ex-card:not(.done) .ex-badge{background:rgba(255,71,163,0.15)!important;color:var(--heavy)!important}
 
-  .exercise-card {
-    background: var(--surface);
-    border-radius: 10px;
-    border: 1px solid var(--border);
-    overflow: hidden;
-    transition: opacity 0.2s;
-  }
-  .exercise-card.done { opacity: 0.4; }
-  .exercise-card.done .ex-name { text-decoration: line-through; }
+.card-edit-ctrl{display:none;align-items:center;gap:8px;padding:8px 16px 12px;border-top:1px solid var(--border)}
+.session.em .card-edit-ctrl{display:flex}
+.ec-btn{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:6px 12px;border-radius:6px;border:1px solid var(--border);background:none;cursor:pointer;transition:all 0.15s;color:var(--muted)}
+.ec-btn:active{background:var(--surface2)}
+.ec-del{color:var(--accent3);border-color:rgba(255,107,71,0.3);margin-left:auto}
+.ec-del:active{background:rgba(255,107,71,0.08)}
 
-  .card-top {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 10px;
-    padding: 14px 16px;
-    cursor: pointer;
-    user-select: none;
-  }
-  .card-top:active { background: var(--surface2); }
+.add-ex{display:none;align-items:center;justify-content:center;gap:8px;margin:8px 12px 4px;padding:12px;border:1px dashed var(--border);border-radius:10px;background:none;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;cursor:pointer;transition:all 0.15s;width:calc(100% - 24px)}
+.session.em .add-ex{display:flex}
+.add-ex:hover{border-color:var(--accent2);color:var(--accent2)}
 
-  .ex-left { display: flex; align-items: center; gap: 12px; }
-  .ex-num { font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; color: var(--muted); min-width: 18px; }
-  .ex-info { flex: 1; }
-  .ex-name { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px; line-height: 1.1; }
-  .ex-detail { font-size: 12px; color: var(--muted); margin-top: 2px; letter-spacing: 0.3px; }
+.wt-row{display:flex;align-items:center;gap:8px;padding:10px 16px 14px;border-top:1px solid var(--border)}
+.wt-lbl{font-size:11px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase;white-space:nowrap;flex-shrink:0}
+.wt-ctrl{display:flex;align-items:center;gap:6px;margin-left:auto}
+.wt-btn{width:34px;height:34px;border-radius:50%;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:20px;font-weight:300;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background 0.1s;flex-shrink:0;line-height:1}
+.wt-btn:active{background:var(--border)}
+.wt-wrap{position:relative;min-width:56px;text-align:center}
+.wt-disp{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);min-width:56px;text-align:center;line-height:1;cursor:pointer;border-bottom:1px dashed var(--border);padding-bottom:1px;transition:all 0.15s;display:block}
+.wt-disp:hover{border-color:var(--muted);color:var(--accent2)}
+.wt-input{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:700;color:var(--text);background:var(--surface2);border:1px solid var(--accent2);border-radius:4px;width:68px;text-align:center;padding:2px 4px;outline:none;display:none}
+.wt-input.vis{display:block}
+.wt-disp.hide{display:none}
+.wt-unit{font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;min-width:14px}
+.step-tog{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--muted);border:1px solid var(--border);background:none;border-radius:4px;padding:4px 7px;cursor:pointer;letter-spacing:0.5px;white-space:nowrap}
+.sv-flash{font-size:10px;color:var(--ok);letter-spacing:0.5px;text-transform:uppercase;opacity:0;transition:opacity 0.3s;white-space:nowrap;flex-shrink:0}
+.sv-flash.show{opacity:1}
 
-  .ex-badge {
-    font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700;
-    padding: 5px 10px; border-radius: 6px; white-space: nowrap;
-    background: var(--surface2); color: var(--text);
-    text-align: center; min-width: 64px; line-height: 1.2;
-    transition: background 0.2s, color 0.2s;
-  }
-  .ex-badge-sets { font-size: 11px; opacity: 0.7; font-weight: 600; display: block; }
+.note-card{margin:10px 12px 0;background:rgba(255,179,71,0.07);border:1px solid rgba(255,179,71,0.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--warm);letter-spacing:0.2px;line-height:1.5}
+.note-card strong{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:1px;font-size:11px;display:block;margin-bottom:3px}
+.reset-btn{display:block;margin:12px auto 0;padding:10px 24px;background:none;border:1px solid var(--border);border-radius:20px;color:var(--muted);font-size:11px;letter-spacing:1px;text-transform:uppercase;font-family:'Barlow Condensed',sans-serif;font-weight:700;cursor:pointer;transition:all 0.15s}
+.reset-btn:hover{border-color:var(--muted);color:var(--text)}
+.pain-grid{margin:24px 12px 0;background:var(--surface);border-radius:10px;border:1px solid var(--border);padding:14px 16px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.pi{display:flex;flex-direction:column;gap:4px}
+.pi-dot{width:8px;height:8px;border-radius:50%;margin:0 auto}
+.pi-lbl{font-size:10px;color:var(--muted);letter-spacing:0.5px;text-transform:uppercase}
+.pi-act{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
 
-  .session-0 .exercise-card:not(.done) .ex-badge { background: rgba(232,255,71,0.12); color: var(--accent); }
-  .session-1 .exercise-card:not(.done) .ex-badge { background: rgba(71,195,255,0.12); color: var(--accent2); }
-  .session-2 .exercise-card:not(.done) .ex-badge { background: rgba(255,107,71,0.12); color: var(--accent3); }
+/* SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:200;opacity:0;pointer-events:none;transition:opacity 0.25s}
+.overlay.open{opacity:1;pointer-events:all}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-radius:20px 20px 0 0;border-top:1px solid var(--border);z-index:201;transform:translateY(100%);transition:transform 0.3s cubic-bezier(0.32,0.72,0,1);max-height:90vh;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:max(env(safe-area-inset-bottom),16px)}
+.sheet.open{transform:translateY(0)}
+.sh-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
+.sh-head{display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;border-bottom:1px solid var(--border)}
+.sh-title{font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:800;text-transform:uppercase;letter-spacing:-0.3px}
+.sh-cancel{font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);border:none;background:none;cursor:pointer;padding:6px}
+.sh-body{padding:16px 20px;display:flex;flex-direction:column;gap:14px}
+.sh-field{display:flex;flex-direction:column;gap:6px}
+.sh-lbl{font-family:'Barlow Condensed',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted)}
+.sh-input{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'Barlow',sans-serif;font-size:15px;padding:10px 14px;outline:none;width:100%;transition:border-color 0.15s;-webkit-appearance:none}
+.sh-input:focus{border-color:var(--accent2)}
+.sh-sec{font-family:'Barlow Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--text);padding-top:4px;border-top:1px solid var(--border)}
+.sh-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sh-tog-row{display:flex;align-items:center;justify-content:space-between;padding:4px 0}
+.sh-tog-lbl{font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--text)}
+.sh-foot{padding:4px 20px 8px}
+.sh-save{width:100%;padding:14px;background:var(--accent2);color:#000;font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:800;letter-spacing:1px;text-transform:uppercase;border:none;border-radius:10px;cursor:pointer;transition:opacity 0.15s}
+.sh-save:active{opacity:0.8}
 
-  /* Heavy mode badge overrides */
-  .is-heavy-session .exercise-card:not(.done) .ex-badge {
-    background: rgba(255,71,163,0.15) !important;
-    color: var(--heavy) !important;
-  }
-
-  /* WEIGHT ROW */
-  .weight-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px 14px;
-    border-top: 1px solid var(--border);
-  }
-
-  .weight-label {
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  .weight-controls {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-left: auto;
-  }
-
-  .wt-btn {
-    width: 34px; height: 34px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: var(--surface2);
-    color: var(--text);
-    font-size: 20px;
-    font-weight: 300;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: background 0.1s;
-    flex-shrink: 0;
-    line-height: 1;
-  }
-  .wt-btn:active { background: var(--border); }
-
-  /* Tap-to-type weight display */
-  .wt-display-wrap {
-    position: relative;
-    min-width: 56px;
-    text-align: center;
-  }
-
-  .wt-display {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    min-width: 56px;
-    text-align: center;
-    line-height: 1;
-    cursor: pointer;
-    border-bottom: 1px dashed var(--border);
-    padding-bottom: 1px;
-    transition: border-color 0.15s, color 0.15s;
-    display: block;
-  }
-  .wt-display:hover { border-color: var(--muted); color: var(--accent); }
-
-  .wt-input {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text);
-    background: var(--surface2);
-    border: 1px solid var(--accent2);
-    border-radius: 4px;
-    width: 64px;
-    text-align: center;
-    line-height: 1;
-    padding: 2px 4px;
-    outline: none;
-    display: none;
-  }
-  .wt-input.visible {
-    display: block;
-  }
-  .wt-display.hidden {
-    display: none;
-  }
-
-  .wt-unit {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    min-width: 14px;
-  }
-
-  .wt-step-toggle {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    background: none;
-    border-radius: 4px;
-    padding: 4px 7px;
-    cursor: pointer;
-    letter-spacing: 0.5px;
-    white-space: nowrap;
-    transition: color 0.1s, border-color 0.1s;
-  }
-
-  .saved-flash {
-    font-size: 10px;
-    color: var(--ok);
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    opacity: 0;
-    transition: opacity 0.3s;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .saved-flash.show { opacity: 1; }
-
-  .note-card {
-    margin: 10px 12px 0;
-    background: rgba(255,179,71,0.07);
-    border: 1px solid rgba(255,179,71,0.2);
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 12px;
-    color: var(--warm);
-    letter-spacing: 0.2px;
-    line-height: 1.5;
-  }
-  .note-card strong {
-    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 1px; font-size: 11px;
-    display: block; margin-bottom: 3px;
-  }
-
-  .reset-btn {
-    display: block; margin: 12px auto 0;
-    padding: 10px 24px;
-    background: none; border: 1px solid var(--border); border-radius: 20px;
-    color: var(--muted); font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
-    font-family: 'Barlow Condensed', sans-serif; font-weight: 700;
-    cursor: pointer; transition: border-color 0.15s, color 0.15s;
-  }
-  .reset-btn:hover { border-color: var(--muted); color: var(--text); }
-
-  .pain-rule {
-    margin: 24px 12px 0;
-    background: var(--surface); border-radius: 10px; border: 1px solid var(--border);
-    padding: 14px 16px;
-    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center;
-  }
-  .pain-item { display: flex; flex-direction: column; gap: 4px; }
-  .pain-dot { width: 8px; height: 8px; border-radius: 50%; margin: 0 auto; }
-  .pain-label { font-size: 10px; color: var(--muted); letter-spacing: 0.5px; text-transform: uppercase; }
-  .pain-action { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; color: var(--text); }
-
-  /* Toast */
-  .toast {
-    position: fixed;
-    left: 50%;
-    bottom: 18px;
-    transform: translateX(-50%);
-    background: rgba(26,26,28,0.98);
-    border: 1px solid var(--border);
-    border-radius: 22px;
-    padding: 10px 14px;
-    font-size: 11px;
-    letter-spacing: 0.6px;
-    text-transform: uppercase;
-    color: var(--text);
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.22s, transform 0.22s;
-    z-index: 999;
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    max-width: calc(100vw - 24px);
-    text-align: center;
-    white-space: nowrap;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(-4px);
-  }
-  .toast .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--ok);
-    flex-shrink: 0;
-  }
+.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);background:rgba(26,26,28,0.98);border:1px solid var(--border);border-radius:22px;padding:10px 14px;font-size:11px;letter-spacing:0.6px;text-transform:uppercase;color:var(--text);opacity:0;pointer-events:none;transition:opacity 0.22s,transform 0.22s;z-index:999;display:flex;gap:10px;align-items:center;max-width:calc(100vw - 24px);white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px)}
+.toast .dot{width:8px;height:8px;border-radius:50%;background:var(--ok);flex-shrink:0}
 </style>
 </head>
-
 <body>
+
 <div class="header">
   <div class="header-top">
     <span class="header-title">Phase 2</span>
     <span class="header-sub">Weeks 5–10 · RPE 7–9</span>
   </div>
-
   <div class="header-actions">
     <button class="hdr-btn ok" onclick="exportCSV()">Export CSV</button>
     <button class="hdr-btn danger" onclick="clearHistory()">Clear History</button>
+    <button class="hdr-btn danger" onclick="resetApp()">Reset App</button>
   </div>
-
-  <div class="tabs">
-    <button class="tab active" data-session="0">Day 1 · Lower</button>
-    <button class="tab" data-session="1">Day 2 · Upper</button>
-    <button class="tab" data-session="2">Day 3 · Full Body</button>
-  </div>
+  <div class="tabs" id="tab-bar"></div>
 </div>
 
-<div class="sessions">
+<div class="sessions" id="sessions-root"></div>
 
-  <!-- SESSION 1: LOWER -->
-  <div class="session session-0 active" id="session-0">
-
-    <div class="session-banner">
-      <div>
-        <div class="session-name">Lower Body</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">+ Core</div>
-      </div>
-      <div class="session-meta" id="meta-0">4 exercises<br>2 core finishers<br>~55 min</div>
+<!-- EDIT SHEET -->
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sh-handle"></div>
+  <div class="sh-head">
+    <span class="sh-title" id="sh-title">Add Exercise</span>
+    <button class="sh-cancel" onclick="closeSheet()">Cancel</button>
+  </div>
+  <div class="sh-body">
+    <div class="sh-field"><label class="sh-lbl">Exercise Name</label>
+      <input class="sh-input" id="sf-name" type="text" placeholder="e.g. Trap Bar Deadlift" autocomplete="off"></div>
+    <div class="sh-field"><label class="sh-lbl">Movement Cue</label>
+      <input class="sh-input" id="sf-cue" type="text" placeholder="e.g. Neutral spine · 2 min rest" autocomplete="off"></div>
+    <span class="sh-sec">Standard Volume</span>
+    <div class="sh-row">
+      <div class="sh-field"><label class="sh-lbl">Sets × Reps</label>
+        <input class="sh-input" id="sf-sr" type="text" placeholder="3×10" autocomplete="off"></div>
+      <div class="sh-field"><label class="sh-lbl">Label</label>
+        <input class="sh-input" id="sf-ss" type="text" placeholder="reps" autocomplete="off"></div>
     </div>
-
-    <div class="heavy-toggle-row" id="heavy-row-0">
-      <div class="heavy-toggle-label">
-        <span class="heavy-toggle-title">Heavy Week</span>
-        <span class="heavy-toggle-sub" id="heavy-sub-0">Standard volume · RPE 7–8</span>
-      </div>
-      <label class="toggle-switch">
-        <input type="checkbox" id="heavy-0" onchange="toggleHeavy(0)">
-        <span class="toggle-slider"></span>
+    <span class="sh-sec">Heavy Week</span>
+    <div class="sh-row">
+      <div class="sh-field"><label class="sh-lbl">Sets × Reps</label>
+        <input class="sh-input" id="sf-hr" type="text" placeholder="3×6" autocomplete="off"></div>
+      <div class="sh-field"><label class="sh-lbl">Label</label>
+        <input class="sh-input" id="sf-hs" type="text" placeholder="reps" autocomplete="off"></div>
+    </div>
+    <span class="sh-sec">Weight Tracking</span>
+    <div class="sh-tog-row">
+      <span class="sh-tog-lbl">Track weight for this exercise</span>
+      <label class="tog">
+        <input type="checkbox" id="sf-hw" onchange="sfWtTog()">
+        <span class="tog-slider"></span>
       </label>
     </div>
-
-    <div class="phase">
-      <div class="phase-label">Warm-Up · 10 min</div>
-      <div class="exercise-list">
-        <div class="exercise-card" id="ex-deadbug">
-          <div class="card-top" onclick="toggleDone('ex-deadbug')">
-            <div class="ex-left"><div class="ex-num">W1</div><div class="ex-info"><div class="ex-name">Dead Bug</div><div class="ex-detail">Slow + controlled · exhale on extend</div></div></div>
-            <div class="ex-badge">3×8<span class="ex-badge-sets">each</span></div>
-          </div>
-        </div>
-        <div class="exercise-card" id="ex-glutebridge">
-          <div class="card-top" onclick="toggleDone('ex-glutebridge')">
-            <div class="ex-left"><div class="ex-num">W2</div><div class="ex-info"><div class="ex-name">Glute Bridge</div><div class="ex-detail">Pause 2s at top · drive hips fully</div></div></div>
-            <div class="ex-badge">3×10<span class="ex-badge-sets">reps</span></div>
-          </div>
-        </div>
-        <div class="exercise-card" id="ex-bandedwalk">
-          <div class="card-top" onclick="toggleDone('ex-bandedwalk')">
-            <div class="ex-left"><div class="ex-num">W3</div><div class="ex-info"><div class="ex-name">Banded Lateral Walk</div><div class="ex-detail">Glute med focus · keep hips level</div></div></div>
-            <div class="ex-badge">2×15<span class="ex-badge-sets">each</span></div>
-          </div>
-        </div>
-        <div class="exercise-card" id="ex-hipcars">
-          <div class="card-top" onclick="toggleDone('ex-hipcars')">
-            <div class="ex-left"><div class="ex-num">W4</div><div class="ex-info"><div class="ex-name">Hip CARs</div><div class="ex-detail">Controlled articular rotations · slow</div></div></div>
-            <div class="ex-badge">5<span class="ex-badge-sets">each way</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="phase">
-      <div class="phase-label active-phase">Main Work</div>
-      <div class="exercise-list">
-
-        <div class="exercise-card" id="ex-trapbar">
-          <div class="card-top" onclick="toggleDone('ex-trapbar')">
-            <div class="ex-left"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Trap Bar Deadlift</div><div class="ex-detail">2 min rest · neutral spine throughout</div></div></div>
-            <div class="ex-badge" id="badge-ex-trapbar">4×5<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">Total weight</span>
-            <span class="saved-flash" id="saved-ex-trapbar">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-trapbar')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-trapbar',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-trapbar" onclick="startEdit('ex-trapbar')">60</span>
-                <input class="wt-input" id="input-ex-trapbar" type="number" inputmode="decimal" onblur="finishEdit('ex-trapbar')" onkeydown="inputKey(event,'ex-trapbar')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-trapbar',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-splitsquat">
-          <div class="card-top" onclick="toggleDone('ex-splitsquat')">
-            <div class="ex-left"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Split Squat</div><div class="ex-detail">RFESS optional · 90 sec rest · L then R</div></div></div>
-            <div class="ex-badge" id="badge-ex-splitsquat">3×8<span class="ex-badge-sets">each</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB each hand</span>
-            <span class="saved-flash" id="saved-ex-splitsquat">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-splitsquat')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-splitsquat',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-splitsquat" onclick="startEdit('ex-splitsquat')">12</span>
-                <input class="wt-input" id="input-ex-splitsquat" type="number" inputmode="decimal" onblur="finishEdit('ex-splitsquat')" onkeydown="inputKey(event,'ex-splitsquat')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-splitsquat',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-stepups">
-          <div class="card-top" onclick="toggleDone('ex-stepups')">
-            <div class="ex-left"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Step-Ups</div><div class="ex-detail">Controlled · don't push off back foot</div></div></div>
-            <div class="ex-badge" id="badge-ex-stepups">3×10<span class="ex-badge-sets">each</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB each hand</span>
-            <span class="saved-flash" id="saved-ex-stepups">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-stepups')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-stepups',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-stepups" onclick="startEdit('ex-stepups')">12</span>
-                <input class="wt-input" id="input-ex-stepups" type="number" inputmode="decimal" onblur="finishEdit('ex-stepups')" onkeydown="inputKey(event,'ex-stepups')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-stepups',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-hipthrust">
-          <div class="card-top" onclick="toggleDone('ex-hipthrust')">
-            <div class="ex-left"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Hip Thrust</div><div class="ex-detail">Pause 1s top · chin tucked · full drive</div></div></div>
-            <div class="ex-badge" id="badge-ex-hipthrust">3×12<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">Barbell load</span>
-            <span class="saved-flash" id="saved-ex-hipthrust">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-hipthrust')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-hipthrust',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-hipthrust" onclick="startEdit('ex-hipthrust')">50</span>
-                <input class="wt-input" id="input-ex-hipthrust" type="number" inputmode="decimal" onblur="finishEdit('ex-hipthrust')" onkeydown="inputKey(event,'ex-hipthrust')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-hipthrust',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="phase">
-      <div class="phase-label">Core Finisher</div>
-      <div class="exercise-list">
-        <div class="exercise-card" id="ex-sideplank1">
-          <div class="card-top" onclick="toggleDone('ex-sideplank1')">
-            <div class="ex-left"><div class="ex-num">C1</div><div class="ex-info"><div class="ex-name">Side Plank</div><div class="ex-detail">Hips stacked · don't sag</div></div></div>
-            <div class="ex-badge">3×45s<span class="ex-badge-sets">each</span></div>
-          </div>
-        </div>
-        <div class="exercise-card" id="ex-pallof1">
-          <div class="card-top" onclick="toggleDone('ex-pallof1')">
-            <div class="ex-left"><div class="ex-num">C2</div><div class="ex-info"><div class="ex-name">Pallof Press</div><div class="ex-detail">Anti-rotation · don't rotate torso</div></div></div>
-            <div class="ex-badge">3×12<span class="ex-badge-sets">each</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button class="reset-btn" onclick="logSession(0)">Log Workout</button>
-    <button class="reset-btn" onclick="resetSession(0)">Reset Checkmarks</button>
-
-    <div class="pain-rule">
-      <div class="pain-item"><div class="pain-dot" style="background:#4caf50"></div><div class="pain-label">Pain ≤4</div><div class="pain-action">Train as written</div></div>
-      <div class="pain-item"><div class="pain-dot" style="background:#ff9800"></div><div class="pain-label">Pain 5</div><div class="pain-action">Drop axial load</div></div>
-      <div class="pain-item"><div class="pain-dot" style="background:#f44336"></div><div class="pain-label">Pain >5</div><div class="pain-action">Deload week</div></div>
-    </div>
-    <div style="height:24px"></div>
+    <div class="sh-field" id="sf-wl-wrap" style="display:none">
+      <label class="sh-lbl">Weight Label</label>
+      <input class="sh-input" id="sf-wl" type="text" placeholder="e.g. DB each hand" autocomplete="off"></div>
   </div>
-
-  <!-- SESSION 2: UPPER -->
-  <div class="session session-1" id="session-1">
-    <div class="session-banner">
-      <div>
-        <div class="session-name">Upper Body</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Push · Pull · Carry</div>
-      </div>
-      <div class="session-meta" id="meta-1">5 exercises<br>~45 min</div>
-    </div>
-
-    <div class="heavy-toggle-row" id="heavy-row-1">
-      <div class="heavy-toggle-label">
-        <span class="heavy-toggle-title">Heavy Week</span>
-        <span class="heavy-toggle-sub" id="heavy-sub-1">Standard volume · RPE 7–8</span>
-      </div>
-      <label class="toggle-switch">
-        <input type="checkbox" id="heavy-1" onchange="toggleHeavy(1)">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-
-    <div class="note-card" style="margin:12px 12px 0">
-      <strong>Note on Pull-Ups</strong>
-      If strength isn't there yet, sub in Lat Pulldown. No ego. Build to it.
-    </div>
-
-    <div class="phase">
-      <div class="phase-label active-phase">Main Work</div>
-      <div class="exercise-list">
-
-        <div class="exercise-card" id="ex-dbbench">
-          <div class="card-top" onclick="toggleDone('ex-dbbench')">
-            <div class="ex-left"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">DB Bench Press</div><div class="ex-detail">Control the descent · full range</div></div></div>
-            <div class="ex-badge" id="badge-ex-dbbench">4×8<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB each hand</span>
-            <span class="saved-flash" id="saved-ex-dbbench">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-dbbench')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-dbbench',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-dbbench" onclick="startEdit('ex-dbbench')">22</span>
-                <input class="wt-input" id="input-ex-dbbench" type="number" inputmode="decimal" onblur="finishEdit('ex-dbbench')" onkeydown="inputKey(event,'ex-dbbench')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-dbbench',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-pullups">
-          <div class="card-top" onclick="toggleDone('ex-pullups')">
-            <div class="ex-left"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Pull-Ups / Assisted</div><div class="ex-detail">Full hang to chin · no kipping</div></div></div>
-            <div class="ex-badge" id="badge-ex-pullups">4×6<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">Assist(−) / Added(+)</span>
-            <span class="saved-flash" id="saved-ex-pullups">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-pullups')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-pullups',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-pullups" onclick="startEdit('ex-pullups')">BW</span>
-                <input class="wt-input" id="input-ex-pullups" type="number" inputmode="decimal" onblur="finishEdit('ex-pullups')" onkeydown="inputKey(event,'ex-pullups')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-pullups',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-cablerow">
-          <div class="card-top" onclick="toggleDone('ex-cablerow')">
-            <div class="ex-left"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Seated Cable Row</div><div class="ex-detail">Chest up · squeeze at end range</div></div></div>
-            <div class="ex-badge" id="badge-ex-cablerow">3×10<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">Stack weight</span>
-            <span class="saved-flash" id="saved-ex-cablerow">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-cablerow')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-cablerow',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-cablerow" onclick="startEdit('ex-cablerow')">45</span>
-                <input class="wt-input" id="input-ex-cablerow" type="number" inputmode="decimal" onblur="finishEdit('ex-cablerow')" onkeydown="inputKey(event,'ex-cablerow')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-cablerow',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-ohpress">
-          <div class="card-top" onclick="toggleDone('ex-ohpress')">
-            <div class="ex-left"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Overhead DB Press</div><div class="ex-detail">Neutral grip · brace core · no arch</div></div></div>
-            <div class="ex-badge" id="badge-ex-ohpress">3×8<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB each hand</span>
-            <span class="saved-flash" id="saved-ex-ohpress">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-ohpress')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-ohpress',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-ohpress" onclick="startEdit('ex-ohpress')">16</span>
-                <input class="wt-input" id="input-ex-ohpress" type="number" inputmode="decimal" onblur="finishEdit('ex-ohpress')" onkeydown="inputKey(event,'ex-ohpress')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-ohpress',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-farmercarry">
-          <div class="card-top" onclick="toggleDone('ex-farmercarry')">
-            <div class="ex-left"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Farmer Carry</div><div class="ex-detail">Tall posture · shoulders packed</div></div></div>
-            <div class="ex-badge" id="badge-ex-farmercarry">4×30m<span class="ex-badge-sets">carry</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB each hand</span>
-            <span class="saved-flash" id="saved-ex-farmercarry">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-farmercarry')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-farmercarry',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-farmercarry" onclick="startEdit('ex-farmercarry')">24</span>
-                <input class="wt-input" id="input-ex-farmercarry" type="number" inputmode="decimal" onblur="finishEdit('ex-farmercarry')" onkeydown="inputKey(event,'ex-farmercarry')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-farmercarry',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <button class="reset-btn" onclick="logSession(1)">Log Workout</button>
-    <button class="reset-btn" onclick="resetSession(1)">Reset Checkmarks</button>
-
-    <div class="pain-rule">
-      <div class="pain-item"><div class="pain-dot" style="background:#4caf50"></div><div class="pain-label">Pain ≤4</div><div class="pain-action">Train as written</div></div>
-      <div class="pain-item"><div class="pain-dot" style="background:#ff9800"></div><div class="pain-label">Pain 5</div><div class="pain-action">Drop axial load</div></div>
-      <div class="pain-item"><div class="pain-dot" style="background:#f44336"></div><div class="pain-label">Pain >5</div><div class="pain-action">Deload week</div></div>
-    </div>
-    <div style="height:24px"></div>
-  </div>
-
-  <!-- SESSION 3: FULL BODY -->
-  <div class="session session-2" id="session-2">
-    <div class="session-banner">
-      <div>
-        <div class="session-name">Full Body</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:4px;text-transform:uppercase;letter-spacing:1px;">Stability Focus · Loaded</div>
-      </div>
-      <div class="session-meta" id="meta-2">5 exercises<br>core circuit<br>~50 min</div>
-    </div>
-
-    <div class="heavy-toggle-row" id="heavy-row-2">
-      <div class="heavy-toggle-label">
-        <span class="heavy-toggle-title">Heavy Week</span>
-        <span class="heavy-toggle-sub" id="heavy-sub-2">Standard volume · RPE 7–8</span>
-      </div>
-      <label class="toggle-switch">
-        <input type="checkbox" id="heavy-2" onchange="toggleHeavy(2)">
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-
-    <div class="note-card" style="margin:12px 12px 0">
-      <strong>Intention for this session</strong>
-      Precision + load. Control still wins — but now you push the weight too.
-    </div>
-
-    <div class="phase">
-      <div class="phase-label active-phase">Main Work</div>
-      <div class="exercise-list">
-
-        <div class="exercise-card" id="ex-gobletsquat">
-          <div class="card-top" onclick="toggleDone('ex-gobletsquat')">
-            <div class="ex-left"><div class="ex-num">1</div><div class="ex-info"><div class="ex-name">Goblet Squat</div><div class="ex-detail">Elbows inside knees · tall chest</div></div></div>
-            <div class="ex-badge" id="badge-ex-gobletsquat">3×10<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB / KB weight</span>
-            <span class="saved-flash" id="saved-ex-gobletsquat">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-gobletsquat')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-gobletsquat',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-gobletsquat" onclick="startEdit('ex-gobletsquat')">20</span>
-                <input class="wt-input" id="input-ex-gobletsquat" type="number" inputmode="decimal" onblur="finishEdit('ex-gobletsquat')" onkeydown="inputKey(event,'ex-gobletsquat')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-gobletsquat',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-rdl">
-          <div class="card-top" onclick="toggleDone('ex-rdl')">
-            <div class="ex-left"><div class="ex-num">2</div><div class="ex-info"><div class="ex-name">Romanian Deadlift</div><div class="ex-detail">Hip hinge · soft knee · feel the stretch</div></div></div>
-            <div class="ex-badge" id="badge-ex-rdl">3×10<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB each hand</span>
-            <span class="saved-flash" id="saved-ex-rdl">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-rdl')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-rdl',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-rdl" onclick="startEdit('ex-rdl')">24</span>
-                <input class="wt-input" id="input-ex-rdl" type="number" inputmode="decimal" onblur="finishEdit('ex-rdl')" onkeydown="inputKey(event,'ex-rdl')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-rdl',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-slrdl">
-          <div class="card-top" onclick="toggleDone('ex-slrdl')">
-            <div class="ex-left"><div class="ex-num">3</div><div class="ex-info"><div class="ex-name">Single-Leg RDL</div><div class="ex-detail">Slow · balance focus · hips square</div></div></div>
-            <div class="ex-badge" id="badge-ex-slrdl">3×8<span class="ex-badge-sets">each</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB each hand</span>
-            <span class="saved-flash" id="saved-ex-slrdl">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-slrdl')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-slrdl',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-slrdl" onclick="startEdit('ex-slrdl')">14</span>
-                <input class="wt-input" id="input-ex-slrdl" type="number" inputmode="decimal" onblur="finishEdit('ex-slrdl')" onkeydown="inputKey(event,'ex-slrdl')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-slrdl',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-inclinepress">
-          <div class="card-top" onclick="toggleDone('ex-inclinepress')">
-            <div class="ex-left"><div class="ex-num">4</div><div class="ex-info"><div class="ex-name">Incline DB Press</div><div class="ex-detail">30–45° incline · controlled tempo</div></div></div>
-            <div class="ex-badge" id="badge-ex-inclinepress">3×10<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">DB each hand</span>
-            <span class="saved-flash" id="saved-ex-inclinepress">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-inclinepress')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-inclinepress',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-inclinepress" onclick="startEdit('ex-inclinepress')">20</span>
-                <input class="wt-input" id="input-ex-inclinepress" type="number" inputmode="decimal" onblur="finishEdit('ex-inclinepress')" onkeydown="inputKey(event,'ex-inclinepress')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-inclinepress',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="exercise-card" id="ex-latpulldown">
-          <div class="card-top" onclick="toggleDone('ex-latpulldown')">
-            <div class="ex-left"><div class="ex-num">5</div><div class="ex-info"><div class="ex-name">Lat Pulldown</div><div class="ex-detail">Pull to upper chest · don't lean back</div></div></div>
-            <div class="ex-badge" id="badge-ex-latpulldown">3×10<span class="ex-badge-sets">reps</span></div>
-          </div>
-          <div class="weight-row">
-            <span class="weight-label">Stack weight</span>
-            <span class="saved-flash" id="saved-ex-latpulldown">✓ Saved</span>
-            <div class="weight-controls">
-              <button class="wt-step-toggle" onclick="toggleStep(event,'ex-latpulldown')">±5</button>
-              <button class="wt-btn" onclick="adjustWeight('ex-latpulldown',-1)">−</button>
-              <div class="wt-display-wrap">
-                <span class="wt-display" id="wt-ex-latpulldown" onclick="startEdit('ex-latpulldown')">45</span>
-                <input class="wt-input" id="input-ex-latpulldown" type="number" inputmode="decimal" onblur="finishEdit('ex-latpulldown')" onkeydown="inputKey(event,'ex-latpulldown')">
-              </div>
-              <span class="wt-unit">kg</span>
-              <button class="wt-btn" onclick="adjustWeight('ex-latpulldown',1)">+</button>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <div class="phase">
-      <div class="phase-label">Core Circuit</div>
-      <div class="exercise-list">
-        <div class="exercise-card" id="ex-birddog">
-          <div class="card-top" onclick="toggleDone('ex-birddog')">
-            <div class="ex-left"><div class="ex-num">C1</div><div class="ex-info"><div class="ex-name">Bird Dog</div><div class="ex-detail">Opposite arm & leg · don't rotate</div></div></div>
-            <div class="ex-badge">3×10<span class="ex-badge-sets">each</span></div>
-          </div>
-        </div>
-        <div class="exercise-card" id="ex-sideplank2">
-          <div class="card-top" onclick="toggleDone('ex-sideplank2')">
-            <div class="ex-left"><div class="ex-num">C2</div><div class="ex-info"><div class="ex-name">Side Plank</div><div class="ex-detail">Hips in line · full breath</div></div></div>
-            <div class="ex-badge">3×45s<span class="ex-badge-sets">each</span></div>
-          </div>
-        </div>
-        <div class="exercise-card" id="ex-antirot">
-          <div class="card-top" onclick="toggleDone('ex-antirot')">
-            <div class="ex-left"><div class="ex-num">C3</div><div class="ex-info"><div class="ex-name">Anti-Rotation Hold</div><div class="ex-detail">Pallof-style · resist rotation</div></div></div>
-            <div class="ex-badge">3×30s<span class="ex-badge-sets">each</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button class="reset-btn" onclick="logSession(2)">Log Workout</button>
-    <button class="reset-btn" onclick="resetSession(2)">Reset Checkmarks</button>
-
-    <div class="pain-rule">
-      <div class="pain-item"><div class="pain-dot" style="background:#4caf50"></div><div class="pain-label">Pain ≤4</div><div class="pain-action">Train as written</div></div>
-      <div class="pain-item"><div class="pain-dot" style="background:#ff9800"></div><div class="pain-label">Pain 5</div><div class="pain-action">Drop axial load</div></div>
-      <div class="pain-item"><div class="pain-dot" style="background:#f44336"></div><div class="pain-label">Pain >5</div><div class="pain-action">Deload week</div></div>
-    </div>
-    <div style="height:24px"></div>
-  </div>
-
+  <div class="sh-foot"><button class="sh-save" onclick="saveSheet()">Save Exercise</button></div>
 </div>
 
-<div class="toast" id="toast"><span class="dot"></span><span id="toastText">Saved</span></div>
+<div class="toast" id="toast"><span class="dot"></span><span id="toast-txt"></span></div>
 
 <script>
-  // ---------------------------
-  // Rep schemes: standard vs heavy
-  // ---------------------------
-  const REP_SCHEMES = {
-    'ex-trapbar':      { std: '4×5',   stdSub: 'reps',  heavy: '4×3',   heavySub: 'reps'  },
-    'ex-splitsquat':   { std: '3×8',   stdSub: 'each',  heavy: '3×5',   heavySub: 'each'  },
-    'ex-stepups':      { std: '3×10',  stdSub: 'each',  heavy: '3×6',   heavySub: 'each'  },
-    'ex-hipthrust':    { std: '3×12',  stdSub: 'reps',  heavy: '3×8',   heavySub: 'reps'  },
-    'ex-dbbench':      { std: '4×8',   stdSub: 'reps',  heavy: '4×5',   heavySub: 'reps'  },
-    'ex-pullups':      { std: '4×6',   stdSub: 'reps',  heavy: '4×4',   heavySub: 'reps'  },
-    'ex-cablerow':     { std: '3×10',  stdSub: 'reps',  heavy: '3×6',   heavySub: 'reps'  },
-    'ex-ohpress':      { std: '3×8',   stdSub: 'reps',  heavy: '3×5',   heavySub: 'reps'  },
-    'ex-farmercarry':  { std: '4×30m', stdSub: 'carry', heavy: '4×30m', heavySub: 'carry' },
-    'ex-gobletsquat':  { std: '3×10',  stdSub: 'reps',  heavy: '3×6',   heavySub: 'reps'  },
-    'ex-rdl':          { std: '3×10',  stdSub: 'reps',  heavy: '3×6',   heavySub: 'reps'  },
-    'ex-slrdl':        { std: '3×8',   stdSub: 'each',  heavy: '3×5',   heavySub: 'each'  },
-    'ex-inclinepress': { std: '3×10',  stdSub: 'reps',  heavy: '3×6',   heavySub: 'reps'  },
-    'ex-latpulldown':  { std: '3×10',  stdSub: 'reps',  heavy: '3×6',   heavySub: 'reps'  },
-  };
+const KS='p2s-v1',KW='p2w-',KH='p2h-v1',KHX='p2hx-v1',KD='p2d-v1',KST='p2st-v1';
 
-  const weightedBySession = [
-    ['ex-trapbar','ex-splitsquat','ex-stepups','ex-hipthrust'],
-    ['ex-dbbench','ex-pullups','ex-cablerow','ex-ohpress','ex-farmercarry'],
-    ['ex-gobletsquat','ex-rdl','ex-slrdl','ex-inclinepress','ex-latpulldown']
-  ];
+const COLORS=[
+  {a:'#e8ff47',r:'232,255,71'},
+  {a:'#47c3ff',r:'71,195,255'},
+  {a:'#ff6b47',r:'255,107,71'}
+];
 
-  const sessionNames = ['Lower Body', 'Upper Body', 'Full Body'];
+const DS=[
+  {name:'Lower Body',sub:'+ Core',ci:0,meta:'4 exercises<br>2 core finishers<br>~55 min',note:null,nt:null,
+   phases:[
+    {lbl:'Warm-Up · 10 min',ap:false,pfx:'W',exs:[
+      {id:'ex-db',   nm:'Dead Bug',            det:'Slow + controlled · exhale on extend',    hw:false,wl:'',sr:'3×8', ss:'each',    hr:'3×8', hs:'each',    dw:0},
+      {id:'ex-gb',   nm:'Glute Bridge',         det:'Pause 2s at top · drive hips fully',      hw:false,wl:'',sr:'3×10',ss:'reps',    hr:'3×10',hs:'reps',    dw:0},
+      {id:'ex-bw',   nm:'Banded Lateral Walk',  det:'Glute med focus · keep hips level',       hw:false,wl:'',sr:'2×15',ss:'each',    hr:'2×15',hs:'each',    dw:0},
+      {id:'ex-hc',   nm:'Hip CARs',             det:'Controlled articular rotations · slow',   hw:false,wl:'',sr:'5',   ss:'each way', hr:'5',   hs:'each way', dw:0}
+    ]},
+    {lbl:'Main Work',ap:true,pfx:'',exs:[
+      {id:'ex-tb',   nm:'Trap Bar Deadlift',    det:'2 min rest · neutral spine throughout',   hw:true,wl:'Total weight',  sr:'4×5', ss:'reps',hr:'4×3',hs:'reps',dw:60},
+      {id:'ex-ss',   nm:'Split Squat',          det:'RFESS optional · 90 sec rest · L then R', hw:true,wl:'DB each hand',  sr:'3×8', ss:'each', hr:'3×5',hs:'each',dw:12},
+      {id:'ex-su',   nm:'Step-Ups',             det:"Controlled · don't push off back foot",   hw:true,wl:'DB each hand',  sr:'3×10',ss:'each', hr:'3×6',hs:'each',dw:12},
+      {id:'ex-ht',   nm:'Hip Thrust',           det:'Pause 1s top · chin tucked · full drive', hw:true,wl:'Barbell load',  sr:'3×12',ss:'reps',hr:'3×8',hs:'reps',dw:50}
+    ]},
+    {lbl:'Core Finisher',ap:false,pfx:'C',exs:[
+      {id:'ex-sp1',  nm:'Side Plank',           det:"Hips stacked · don't sag",                hw:false,wl:'',sr:'3×45s',ss:'each',   hr:'3×45s',hs:'each',  dw:0},
+      {id:'ex-pp',   nm:'Pallof Press',         det:"Anti-rotation · don't rotate torso",      hw:false,wl:'',sr:'3×12', ss:'each',   hr:'3×12', hs:'each',  dw:0}
+    ]}
+  ]},
+  {name:'Upper Body',sub:'Push · Pull · Carry',ci:1,meta:'5 exercises<br>~45 min',
+   note:"If pull-ups aren't there yet, sub in Lat Pulldown. No ego. Build to it.",nt:'Note on Pull-Ups',
+   phases:[
+    {lbl:'Main Work',ap:true,pfx:'',exs:[
+      {id:'ex-dbb',  nm:'DB Bench Press',       det:'Control the descent · full range',        hw:true,wl:'DB each hand',         sr:'4×8', ss:'reps', hr:'4×5', hs:'reps', dw:22},
+      {id:'ex-pu',   nm:'Pull-Ups / Assisted',  det:'Full hang to chin · no kipping',          hw:true,wl:'Assist(−) / Added(+)', sr:'4×6', ss:'reps', hr:'4×4', hs:'reps', dw:null},
+      {id:'ex-cr',   nm:'Seated Cable Row',     det:'Chest up · squeeze at end range',         hw:true,wl:'Stack weight',         sr:'3×10',ss:'reps', hr:'3×6', hs:'reps', dw:45},
+      {id:'ex-ohp',  nm:'Overhead DB Press',    det:'Neutral grip · brace core · no arch',     hw:true,wl:'DB each hand',         sr:'3×8', ss:'reps', hr:'3×5', hs:'reps', dw:16},
+      {id:'ex-fc',   nm:'Farmer Carry',         det:'Tall posture · shoulders packed',         hw:true,wl:'DB each hand',         sr:'4×30m',ss:'carry',hr:'4×30m',hs:'carry',dw:24}
+    ]}
+  ]},
+  {name:'Full Body',sub:'Stability Focus · Loaded',ci:2,meta:'5 exercises<br>core circuit<br>~50 min',
+   note:'Precision + load. Control still wins — but now you push the weight too.',nt:'Intention for this session',
+   phases:[
+    {lbl:'Main Work',ap:true,pfx:'',exs:[
+      {id:'ex-gs',   nm:'Goblet Squat',         det:'Elbows inside knees · tall chest',        hw:true,wl:'DB / KB weight',sr:'3×10',ss:'reps',hr:'3×6',hs:'reps',dw:20},
+      {id:'ex-rdl',  nm:'Romanian Deadlift',    det:'Hip hinge · soft knee · feel the stretch',hw:true,wl:'DB each hand',  sr:'3×10',ss:'reps',hr:'3×6',hs:'reps',dw:24},
+      {id:'ex-sllp', nm:'Single-Leg Leg Press', det:'Foot high · control descent · equal drive each side',hw:true,wl:'Stack weight',sr:'3×10',ss:'each',hr:'3×6',hs:'each',dw:40},
+      {id:'ex-ip',   nm:'Incline DB Press',     det:'30–45° incline · controlled tempo',       hw:true,wl:'DB each hand',  sr:'3×10',ss:'reps',hr:'3×6',hs:'reps',dw:20},
+      {id:'ex-lpd',  nm:'Lat Pulldown',         det:"Pull to upper chest · don't lean back",   hw:true,wl:'Stack weight',  sr:'3×10',ss:'reps',hr:'3×6',hs:'reps',dw:45}
+    ]},
+    {lbl:'Core Circuit',ap:false,pfx:'C',exs:[
+      {id:'ex-bd',   nm:'Bird Dog',             det:"Opposite arm & leg · don't rotate",       hw:false,wl:'',sr:'3×10', ss:'each',hr:'3×10',hs:'each',dw:0},
+      {id:'ex-sp2',  nm:'Side Plank',           det:'Hips in line · full breath',              hw:false,wl:'',sr:'3×45s',ss:'each',hr:'3×45s',hs:'each',dw:0},
+      {id:'ex-ar',   nm:'Anti-Rotation Hold',   det:'Pallof-style · resist rotation',          hw:false,wl:'',sr:'3×30s',ss:'each',hr:'3×30s',hs:'each',dw:0}
+    ]}
+  ]}
+];
 
-  // ---------------------------
-  // Configuration
-  // ---------------------------
-  const WEIGHTED = [
-    'ex-trapbar','ex-splitsquat','ex-stepups','ex-hipthrust',
-    'ex-dbbench','ex-pullups','ex-cablerow','ex-ohpress','ex-farmercarry',
-    'ex-gobletsquat','ex-rdl','ex-slrdl','ex-inclinepress','ex-latpulldown'
-  ];
+// ── STATE ──
+let sess=[],heavy=[false,false,false],em=[false,false,false],done=new Set(),steps={},wts={},ctx=null;
 
-  const DEFAULTS = {
-    'ex-trapbar':60,'ex-splitsquat':12,'ex-stepups':12,'ex-hipthrust':50,
-    'ex-dbbench':22,'ex-pullups':null,'ex-cablerow':45,'ex-ohpress':16,'ex-farmercarry':24,
-    'ex-gobletsquat':20,'ex-rdl':24,'ex-slrdl':14,'ex-inclinepress':20,'ex-latpulldown':45
-  };
+// ── PERSISTENCE ──
+function load(){
+  try{const r=localStorage.getItem(KS);if(r)sess=JSON.parse(r);else sess=JSON.parse(JSON.stringify(DS));}catch{sess=JSON.parse(JSON.stringify(DS));}
+  try{heavy=JSON.parse(localStorage.getItem(KH)||'[false,false,false]');}catch{heavy=[false,false,false];}
+  try{done=new Set(JSON.parse(localStorage.getItem(KD)||'[]'));}catch{done=new Set();}
+  try{steps=JSON.parse(localStorage.getItem(KST)||'{}');}catch{steps={};}
+  // weights loaded after render
+}
+function saveSess(){localStorage.setItem(KS,JSON.stringify(sess));}
+function saveHeavy(){localStorage.setItem(KH,JSON.stringify(heavy));}
+function saveDone(){localStorage.setItem(KD,JSON.stringify([...done]));}
+function saveSteps(){localStorage.setItem(KST,JSON.stringify(steps));}
 
-  const DEFAULT_STEP = 5;
-  const HISTORY_KEY = 'workout-history-v2';
-  const HEAVY_KEY = 'heavy-state-v2';
-
-  const stepSizes = {};
-  WEIGHTED.forEach(id => stepSizes[id] = DEFAULT_STEP);
-
-  const weights = {};
-  const heavyState = [false, false, false];
-
-  // ---------------------------
-  // Heavy Week Toggle
-  // ---------------------------
-  function toggleHeavy(sessionIdx) {
-    const isHeavy = document.getElementById('heavy-' + sessionIdx).checked;
-    heavyState[sessionIdx] = isHeavy;
-
-    // Persist
-    localStorage.setItem(HEAVY_KEY, JSON.stringify(heavyState));
-
-    const row = document.getElementById('heavy-row-' + sessionIdx);
-    const sub = document.getElementById('heavy-sub-' + sessionIdx);
-    const sessionEl = document.getElementById('session-' + sessionIdx);
-
-    if (isHeavy) {
-      row.classList.add('is-heavy');
-      sub.textContent = '+20–25% load · lower reps · RPE 8–9';
-      sessionEl.classList.add('is-heavy-session');
-    } else {
-      row.classList.remove('is-heavy');
-      sub.textContent = 'Standard volume · RPE 7–8';
-      sessionEl.classList.remove('is-heavy-session');
-    }
-
-    // Update all badges in this session
-    weightedBySession[sessionIdx].forEach(id => updateBadge(id, isHeavy));
-
-    toast(isHeavy ? 'Heavy Week ON — add 20–25% load' : 'Standard week');
-  }
-
-  function updateBadge(id, isHeavy) {
-    const badgeEl = document.getElementById('badge-' + id);
-    if (!badgeEl || !REP_SCHEMES[id]) return;
-    const scheme = REP_SCHEMES[id];
-    const reps = isHeavy ? scheme.heavy : scheme.std;
-    const sub = isHeavy ? scheme.heavySub : scheme.stdSub;
-    badgeEl.innerHTML = reps + '<span class="ex-badge-sets">' + sub + '</span>';
-  }
-
-  function loadHeavyState() {
-    try {
-      const stored = JSON.parse(localStorage.getItem(HEAVY_KEY) || '[false,false,false]');
-      stored.forEach((val, i) => {
-        if (val) {
-          heavyState[i] = true;
-          document.getElementById('heavy-' + i).checked = true;
-          toggleHeavy(i); // apply visuals without toast
-        }
-      });
-    } catch {}
-  }
-
-  // ---------------------------
-  // Toast
-  // ---------------------------
-  function toast(msg) {
-    const el = document.getElementById('toast');
-    const txt = document.getElementById('toastText');
-    if (!el || !txt) return;
-    txt.textContent = msg;
-    el.classList.add('show');
-    clearTimeout(el._t);
-    el._t = setTimeout(() => el.classList.remove('show'), 1800);
-  }
-
-  // ---------------------------
-  // LocalStorage persistence
-  // ---------------------------
-  function loadWeights() {
-    for (const id of WEIGHTED) {
-      const raw = localStorage.getItem('wt2-' + id);
-      if (raw !== null) {
-        weights[id] = (raw === 'BW') ? null : parseFloat(raw);
-      } else {
-        weights[id] = DEFAULTS[id];
-      }
-      renderWeight(id);
-    }
-  }
-
-  function saveWeight(id) {
-    const val = (weights[id] === null) ? 'BW' : String(weights[id]);
-    localStorage.setItem('wt2-' + id, val);
-    flashSaved(id);
-  }
-
-  function flashSaved(id) {
-    const el = document.getElementById('saved-' + id);
-    if (!el) return;
-    el.classList.add('show');
-    clearTimeout(el._t);
-    el._t = setTimeout(() => el.classList.remove('show'), 1400);
-  }
-
-  // ---------------------------
-  // Weight UI
-  // ---------------------------
-  function renderWeight(id) {
-    const el = document.getElementById('wt-' + id);
-    if (!el) return;
-    const v = weights[id];
-    el.textContent = (v === null) ? 'BW' : ((v % 1 === 0) ? v : v.toFixed(1));
-  }
-
-  function adjustWeight(id, dir) {
-    const step = stepSizes[id] ?? DEFAULT_STEP;
-    let current = weights[id];
-    if (current === null) current = 0;
-    let next = Math.round((current + dir * step) * 10) / 10;
-    if (next < 0) next = 0;
-    weights[id] = (id === 'ex-pullups' && next === 0) ? null : next;
-    renderWeight(id);
-    saveWeight(id);
-  }
-
-  function toggleStep(e, id) {
-    e.preventDefault();
-    e.stopPropagation();
-    stepSizes[id] = (stepSizes[id] === 5 ? 2.5 : 5);
-    e.target.textContent = '±' + stepSizes[id];
-    toast('Step ' + stepSizes[id] + 'kg');
-  }
-
-  // ---------------------------
-  // Tap-to-type weight editing
-  // ---------------------------
-  function startEdit(id) {
-    const display = document.getElementById('wt-' + id);
-    const input = document.getElementById('input-' + id);
-    if (!display || !input) return;
-
-    const current = weights[id];
-    input.value = (current === null) ? '' : current;
-    display.classList.add('hidden');
-    input.classList.add('visible');
-    input.focus();
-    input.select();
-  }
-
-  function finishEdit(id) {
-    const display = document.getElementById('wt-' + id);
-    const input = document.getElementById('input-' + id);
-    if (!display || !input) return;
-
-    const raw = input.value.trim();
-    if (raw !== '') {
-      const parsed = parseFloat(raw);
-      if (!isNaN(parsed) && parsed >= 0) {
-        weights[id] = (id === 'ex-pullups' && parsed === 0) ? null : Math.round(parsed * 10) / 10;
-        saveWeight(id);
-      }
-    }
-
-    renderWeight(id);
-    display.classList.remove('hidden');
-    input.classList.remove('visible');
-  }
-
-  function inputKey(e, id) {
-    if (e.key === 'Enter') {
-      e.target.blur();
-    } else if (e.key === 'Escape') {
-      const display = document.getElementById('wt-' + id);
-      const input = document.getElementById('input-' + id);
-      renderWeight(id);
-      display.classList.remove('hidden');
-      input.classList.remove('visible');
-    }
-  }
-
-  // ---------------------------
-  // Tabs
-  // ---------------------------
-  document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-      const idx = tab.dataset.session;
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.querySelectorAll('.session').forEach(s => s.classList.remove('active'));
-      tab.classList.add('active');
-      document.querySelectorAll('.session')[idx].classList.add('active');
-      window.scrollTo(0, 0);
-    });
-  });
-
-  // ---------------------------
-  // Done toggle
-  // ---------------------------
-  function toggleDone(id) {
-    document.getElementById(id)?.classList.toggle('done');
-  }
-
-  // ---------------------------
-  // Reset
-  // ---------------------------
-  const sessionExercises = [
-    ['ex-deadbug','ex-glutebridge','ex-bandedwalk','ex-hipcars',
-     'ex-trapbar','ex-splitsquat','ex-stepups','ex-hipthrust','ex-sideplank1','ex-pallof1'],
-    ['ex-dbbench','ex-pullups','ex-cablerow','ex-ohpress','ex-farmercarry'],
-    ['ex-gobletsquat','ex-rdl','ex-slrdl','ex-inclinepress','ex-latpulldown',
-     'ex-birddog','ex-sideplank2','ex-antirot']
-  ];
-
-  function resetSession(idx) {
-    sessionExercises[idx].forEach(id => {
-      document.getElementById(id)?.classList.remove('done');
-    });
-    toast('Checkmarks reset');
-  }
-
-  // ---------------------------
-  // Logging & Export
-  // ---------------------------
-  function getHistory() {
-    try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); } catch { return []; }
-  }
-
-  function saveHistory(entries) {
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
-  }
-
-  function todayISO() {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-  }
-
-  function logSession(sessionIdx) {
-    const date = todayISO();
-    const isHeavy = heavyState[sessionIdx];
-    const rows = weightedBySession[sessionIdx].map(id => ({
-      date,
-      session: sessionNames[sessionIdx],
-      week_type: isHeavy ? 'heavy' : 'standard',
-      exerciseId: id,
-      weight: (weights[id] === null ? 'BW' : weights[id]),
-      step: stepSizes[id] ?? DEFAULT_STEP
+// ── RENDER ──
+function renderAll(){
+  // tabs
+  document.getElementById('tab-bar').innerHTML=sess.map((s,i)=>
+    `<button class="tab${i===0?' active':''}" data-s="${i}" onclick="switchTab(${i})">Day ${i+1} · ${s.name.split(' ')[0]}</button>`
+  ).join('');
+  // sessions
+  document.getElementById('sessions-root').innerHTML=sess.map((s,i)=>buildSess(s,i)).join('');
+  // weights
+  sess.forEach((s,si)=>{
+    s.phases.forEach(p=>p.exs.forEach(ex=>{
+      if(!ex.hw)return;
+      const raw=localStorage.getItem(KW+ex.id);
+      wts[ex.id]=raw!==null?(raw==='BW'?null:parseFloat(raw)):ex.dw;
+      if(raw===null){localStorage.setItem(KW+ex.id,ex.dw===null?'BW':String(ex.dw));}
+      renderWt(ex.id);
     }));
+    if(heavy[si])applyHeavy(si,true);
+  });
+  // done
+  done.forEach(id=>document.getElementById('c-'+id)?.classList.add('done'));
+}
 
-    const history = getHistory();
-    history.push(...rows);
-    saveHistory(history);
-    toast(`Logged ${sessionNames[sessionIdx]} · ${isHeavy ? 'HEAVY' : 'standard'} · ${date}`);
+function buildSess(s,si){
+  const note=s.note?`<div class="note-card" style="margin:12px 12px 0"><strong>${s.nt}</strong>${s.note}</div>`:'';
+  const phases=s.phases.map((p,pi)=>buildPhase(s,si,p,pi)).join('');
+  return `
+<div class="session s${s.ci}${si===0?' active':''}" id="sess-${si}">
+  <div class="session-banner">
+    <div class="session-name-block"><div class="session-name">${s.name}</div><div class="session-subtitle">${s.sub}</div></div>
+    <button class="edit-btn" id="eb-${si}" onclick="toggleEM(${si})">Edit</button>
+    <div class="session-meta">${s.meta}</div>
+  </div>
+  <div class="edit-bar">✎ &nbsp;Tap exercise to edit · + to add</div>
+  <div class="heavy-row${heavy[si]?' on':''}" id="hr-${si}">
+    <div class="heavy-lbl">
+      <span class="heavy-title">Heavy Week</span>
+      <span class="heavy-sub" id="hs-${si}">${heavy[si]?'+20–25% load · lower reps · RPE 8–9':'Standard volume · RPE 7–8'}</span>
+    </div>
+    <label class="tog"><input type="checkbox" id="htog-${si}"${heavy[si]?' checked':''} onchange="toggleHeavy(${si})"><span class="tog-slider"></span></label>
+  </div>
+  ${note}
+  ${phases}
+  <button class="reset-btn" onclick="logSess(${si})">Log Workout</button>
+  <button class="reset-btn" onclick="resetDone(${si})">Reset Checkmarks</button>
+  <div class="pain-grid">
+    <div class="pi"><div class="pi-dot" style="background:#4caf50"></div><div class="pi-lbl">Pain ≤4</div><div class="pi-act">Train as written</div></div>
+    <div class="pi"><div class="pi-dot" style="background:#ff9800"></div><div class="pi-lbl">Pain 5</div><div class="pi-act">Drop axial load</div></div>
+    <div class="pi"><div class="pi-dot" style="background:#f44336"></div><div class="pi-lbl">Pain &gt;5</div><div class="pi-act">Deload week</div></div>
+  </div>
+  <div style="height:24px"></div>
+</div>`;
+}
+
+function buildPhase(s,si,p,pi){
+  return `
+<div class="phase">
+  <div class="phase-lbl${p.ap?' ap':''}">${p.lbl}</div>
+  <div class="ex-list" id="pl-${si}-${pi}">${p.exs.map((ex,ei)=>buildEx(s,si,p,pi,ex,ei)).join('')}</div>
+  <button class="add-ex" onclick="openSheet(${si},${pi},null)">+ Add Exercise</button>
+</div>`;
+}
+
+function buildEx(s,si,p,pi,ex,ei){
+  const num=p.pfx+(ei+1);
+  const hv=heavy[si];
+  const reps=hv?ex.hr:ex.sr, sub=hv?ex.hs:ex.ss;
+  const wtRow=ex.hw?`
+<div class="wt-row">
+  <span class="wt-lbl">${ex.wl}</span>
+  <span class="sv-flash" id="svf-${ex.id}">✓ Saved</span>
+  <div class="wt-ctrl">
+    <button class="step-tog" onclick="toggleStep(event,'${ex.id}')">±${steps[ex.id]||5}</button>
+    <button class="wt-btn" onclick="adjWt('${ex.id}',-1)">−</button>
+    <div class="wt-wrap">
+      <span class="wt-disp" id="wd-${ex.id}" onclick="startEdit('${ex.id}')">--</span>
+      <input class="wt-input" id="wi-${ex.id}" type="number" inputmode="decimal" onblur="finishEdit('${ex.id}')" onkeydown="wtKey(event,'${ex.id}')">
+    </div>
+    <span class="wt-unit">kg</span>
+    <button class="wt-btn" onclick="adjWt('${ex.id}',1)">+</button>
+  </div>
+</div>`:'';
+  return `
+<div class="ex-card" id="c-${ex.id}">
+  <div class="card-top" onclick="cardTap('${ex.id}',${si},${pi},${ei})">
+    <div class="ex-left"><div class="ex-num">${num}</div><div class="ex-info"><div class="ex-name">${ex.nm}</div><div class="ex-detail">${ex.det}</div></div></div>
+    <div class="ex-badge" id="badge-${ex.id}">${reps}<span class="ex-bsub">${sub}</span></div>
+  </div>
+  ${wtRow}
+  <div class="card-edit-ctrl">
+    <button class="ec-btn" onclick="moveEx(${si},${pi},${ei},-1)">↑</button>
+    <button class="ec-btn" onclick="moveEx(${si},${pi},${ei},1)">↓</button>
+    <button class="ec-btn ec-del" onclick="delEx(${si},${pi},${ei})">Delete</button>
+  </div>
+</div>`;
+}
+
+function rerenderPhase(si,pi){
+  const s=sess[si],p=s.phases[pi];
+  const el=document.getElementById(`pl-${si}-${pi}`);
+  if(!el)return;
+  el.innerHTML=p.exs.map((ex,ei)=>buildEx(s,si,p,pi,ex,ei)).join('');
+  p.exs.forEach(ex=>{
+    if(!ex.hw)return;
+    if(!(ex.id in wts))wts[ex.id]=0;
+    renderWt(ex.id);
+  });
+  if(heavy[si])applyHeavy(si,true);
+  done.forEach(id=>document.getElementById('c-'+id)?.classList.add('done'));
+}
+
+// ── TABS ──
+function switchTab(i){
+  document.querySelectorAll('.tab').forEach((t,j)=>t.classList.toggle('active',i===j));
+  document.querySelectorAll('.session').forEach((s,j)=>s.classList.toggle('active',i===j));
+  window.scrollTo(0,0);
+}
+
+// ── EDIT MODE ──
+function toggleEM(si){
+  em[si]=!em[si];
+  document.getElementById('sess-'+si).classList.toggle('em',em[si]);
+  const btn=document.getElementById('eb-'+si);
+  btn.textContent=em[si]?'Done':'Edit';
+  btn.classList.toggle('on',em[si]);
+  if(!em[si])toast('Changes saved');
+}
+
+function cardTap(exId,si,pi,ei){
+  if(em[si])openSheet(si,pi,ei); else toggleDone(exId);
+}
+
+// ── SHEET ──
+function openSheet(si,pi,ei){
+  ctx={si,pi,ei};
+  const isNew=ei===null;
+  document.getElementById('sh-title').textContent=isNew?'Add Exercise':'Edit Exercise';
+  if(!isNew){
+    const ex=sess[si].phases[pi].exs[ei];
+    document.getElementById('sf-name').value=ex.nm;
+    document.getElementById('sf-cue').value=ex.det;
+    document.getElementById('sf-sr').value=ex.sr;
+    document.getElementById('sf-ss').value=ex.ss;
+    document.getElementById('sf-hr').value=ex.hr;
+    document.getElementById('sf-hs').value=ex.hs;
+    document.getElementById('sf-hw').checked=ex.hw;
+    document.getElementById('sf-wl').value=ex.wl||'';
+    document.getElementById('sf-wl-wrap').style.display=ex.hw?'':'none';
+  }else{
+    ['sf-name','sf-cue','sf-sr','sf-ss','sf-hr','sf-hs','sf-wl'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('sf-ss').value='reps';
+    document.getElementById('sf-hs').value='reps';
+    document.getElementById('sf-hw').checked=false;
+    document.getElementById('sf-wl-wrap').style.display='none';
   }
+  document.getElementById('overlay').classList.add('open');
+  document.getElementById('sheet').classList.add('open');
+  document.body.style.overflow='hidden';
+  setTimeout(()=>document.getElementById('sf-name').focus(),350);
+}
 
-  function exportCSV() {
-    const history = getHistory();
-    if (!history.length) { toast('No history to export'); return; }
+function closeSheet(){
+  document.getElementById('overlay').classList.remove('open');
+  document.getElementById('sheet').classList.remove('open');
+  document.body.style.overflow='';
+  ctx=null;
+}
 
-    const header = ['date','session','week_type','exerciseId','weight','step'];
-    const lines = [header.join(',')];
-    for (const r of history) {
-      lines.push([r.date, escapeCSV(r.session), r.week_type || 'standard', r.exerciseId, r.weight, r.step].join(','));
-    }
+function sfWtTog(){
+  document.getElementById('sf-wl-wrap').style.display=document.getElementById('sf-hw').checked?'':'none';
+}
 
-    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `workout-history-${todayISO()}.csv`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-    toast('CSV exported');
+function saveSheet(){
+  if(!ctx)return;
+  const {si,pi,ei}=ctx;
+  const nm=document.getElementById('sf-name').value.trim();
+  if(!nm){toast('Name required');return;}
+  const det=document.getElementById('sf-cue').value.trim();
+  const sr=document.getElementById('sf-sr').value.trim()||'—';
+  const ss=document.getElementById('sf-ss').value.trim()||'reps';
+  const hr=document.getElementById('sf-hr').value.trim()||sr;
+  const hs=document.getElementById('sf-hs').value.trim()||ss;
+  const hw=document.getElementById('sf-hw').checked;
+  const wl=document.getElementById('sf-wl').value.trim();
+  const phase=sess[si].phases[pi];
+  if(ei===null){
+    const nex={id:'ex-c'+Date.now(),nm,det,hw,wl,sr,ss,hr,hs,dw:0};
+    if(hw){wts[nex.id]=0;localStorage.setItem(KW+nex.id,'0');}
+    phase.exs.push(nex);
+    toast('Exercise added');
+  }else{
+    const ex=phase.exs[ei];
+    Object.assign(ex,{nm,det,hw,wl,sr,ss,hr,hs});
+    toast('Exercise updated');
   }
+  saveSess();
+  rerenderPhase(si,pi);
+  closeSheet();
+}
 
-  function escapeCSV(value) {
-    const s = String(value);
-    if (/[,"\n]/.test(s)) return '"' + s.replace(/"/g, '""') + '"';
-    return s;
-  }
+// ── MOVE / DELETE ──
+function delEx(si,pi,ei){
+  if(!confirm('Delete this exercise?'))return;
+  sess[si].phases[pi].exs.splice(ei,1);
+  saveSess();rerenderPhase(si,pi);toast('Exercise removed');
+}
 
-  function clearHistory() {
-    if (!confirm('Clear ALL logged workout history? This cannot be undone.')) return;
-    localStorage.removeItem(HISTORY_KEY);
-    toast('History cleared');
-  }
+function moveEx(si,pi,ei,dir){
+  const arr=sess[si].phases[pi].exs,t=ei+dir;
+  if(t<0||t>=arr.length)return;
+  [arr[ei],arr[t]]=[arr[t],arr[ei]];
+  saveSess();rerenderPhase(si,pi);
+}
 
-  // ---------------------------
-  // Boot
-  // ---------------------------
-  loadWeights();
-  // Load heavy state after a tick to avoid toast on boot
-  setTimeout(loadHeavyState, 50);
+// ── WEIGHTS ──
+function adjWt(id,dir){
+  const step=steps[id]||5;
+  let v=wts[id];if(v===null)v=0;
+  let n=Math.round((v+dir*step)*10)/10;
+  if(n<0)n=0;
+  wts[id]=(id==='ex-pu'&&n===0)?null:n;
+  renderWt(id);persistWt(id);flashSaved(id);
+}
+
+function toggleStep(e,id){
+  e.preventDefault();e.stopPropagation();
+  steps[id]=steps[id]===5?2.5:steps[id]===2.5?1:5;
+  e.target.textContent='±'+steps[id];
+  saveSteps();toast('Step '+steps[id]+' kg');
+}
+
+function renderWt(id){
+  const el=document.getElementById('wd-'+id);if(!el)return;
+  const v=wts[id];el.textContent=v===null?'BW':(v%1===0?v:v.toFixed(1));
+}
+
+function persistWt(id){localStorage.setItem(KW+id,wts[id]===null?'BW':String(wts[id]));}
+
+function startEdit(id){
+  const d=document.getElementById('wd-'+id),inp=document.getElementById('wi-'+id);
+  if(!d||!inp)return;
+  inp.value=wts[id]===null?'':wts[id];
+  d.classList.add('hide');inp.classList.add('vis');
+  inp.focus();inp.select();
+}
+
+function finishEdit(id){
+  const d=document.getElementById('wd-'+id),inp=document.getElementById('wi-'+id);
+  if(!d||!inp)return;
+  const r=inp.value.trim();
+  if(r!==''){const p=parseFloat(r);if(!isNaN(p)&&p>=0){wts[id]=(id==='ex-pu'&&p===0)?null:Math.round(p*10)/10;persistWt(id);flashSaved(id);}}
+  renderWt(id);d.classList.remove('hide');inp.classList.remove('vis');
+}
+
+function wtKey(e,id){
+  if(e.key==='Enter')e.target.blur();
+  if(e.key==='Escape'){renderWt(id);document.getElementById('wd-'+id)?.classList.remove('hide');document.getElementById('wi-'+id)?.classList.remove('vis');}
+}
+
+function flashSaved(id){
+  const el=document.getElementById('svf-'+id);if(!el)return;
+  el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),1400);
+}
+
+// ── HEAVY ──
+function toggleHeavy(si){
+  heavy[si]=document.getElementById('htog-'+si).checked;
+  saveHeavy();applyHeavy(si,heavy[si]);
+  toast(heavy[si]?'Heavy Week ON — add 20–25% load':'Standard week');
+}
+
+function applyHeavy(si,on){
+  const sEl=document.getElementById('sess-'+si);
+  const hRow=document.getElementById('hr-'+si);
+  const hSub=document.getElementById('hs-'+si);
+  if(!sEl||!hRow||!hSub)return;
+  sEl.classList.toggle('heavy-session',on);
+  hRow.classList.toggle('on',on);
+  hSub.textContent=on?'+20–25% load · lower reps · RPE 8–9':'Standard volume · RPE 7–8';
+  sess[si].phases.forEach(p=>p.exs.forEach(ex=>{
+    const b=document.getElementById('badge-'+ex.id);if(!b)return;
+    b.innerHTML=(on?ex.hr:ex.sr)+'<span class="ex-bsub">'+(on?ex.hs:ex.ss)+'</span>';
+  }));
+}
+
+// ── DONE ──
+function toggleDone(id){
+  const c=document.getElementById('c-'+id);if(!c)return;
+  if(done.has(id)){done.delete(id);c.classList.remove('done');}
+  else{done.add(id);c.classList.add('done');}
+  saveDone();
+}
+
+function resetDone(si){
+  sess[si].phases.forEach(p=>p.exs.forEach(ex=>{
+    done.delete(ex.id);document.getElementById('c-'+ex.id)?.classList.remove('done');
+  }));
+  saveDone();toast('Checkmarks reset');
+}
+
+// ── LOG / EXPORT ──
+function getHist(){try{return JSON.parse(localStorage.getItem(KHX)||'[]');}catch{return[];}}
+function todayISO(){const d=new Date();return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+
+function logSess(si){
+  const s=sess[si],date=todayISO(),rows=[];
+  s.phases.forEach(p=>p.exs.forEach(ex=>{
+    if(!ex.hw)return;
+    rows.push({date,session:s.name,week_type:heavy[si]?'heavy':'standard',exercise:ex.nm,weight:wts[ex.id]===null?'BW':wts[ex.id]});
+  }));
+  const h=getHist();h.push(...rows);localStorage.setItem(KHX,JSON.stringify(h));
+  toast(`Logged · ${s.name} · ${heavy[si]?'HEAVY':'standard'} · ${date}`);
+}
+
+function exportCSV(){
+  const h=getHist();if(!h.length){toast('No history yet');return;}
+  const lines=[['date','session','week_type','exercise','weight'].join(',')];
+  h.forEach(r=>lines.push([r.date,csv(r.session),r.week_type,csv(r.exercise),r.weight].join(',')));
+  const blob=new Blob([lines.join('\n')],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=`workout-${todayISO()}.csv`;
+  document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+  toast('CSV exported');
+}
+
+function csv(v){const s=String(v);return/[,"\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s;}
+
+function clearHistory(){
+  if(!confirm('Clear all logged history? Cannot be undone.'))return;
+  localStorage.removeItem(KHX);toast('History cleared');
+}
+
+function resetApp(){
+  if(!confirm('Reset all exercises to defaults? Logged history is kept. Weights reset.'))return;
+  [KS,KD,KH,KST].forEach(k=>localStorage.removeItem(k));
+  Object.keys(localStorage).filter(k=>k.startsWith(KW)).forEach(k=>localStorage.removeItem(k));
+  location.reload();
+}
+
+// ── TOAST ──
+function toast(msg){
+  const el=document.getElementById('toast'),txt=document.getElementById('toast-txt');
+  if(!el||!txt)return;txt.textContent=msg;el.classList.add('show');
+  clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2200);
+}
+
+// ── BOOT ──
+load();renderAll();
 </script>
 </body>
 </html>
